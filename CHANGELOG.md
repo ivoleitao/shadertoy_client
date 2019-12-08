@@ -1,3 +1,7 @@
+## 1.0.0-dev.3
+
+- Updated badges
+
 ## 1.0.0-dev.2
 
 - Corrected codecov badge link in the README file
