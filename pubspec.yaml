@@ -16,6 +16,7 @@ dependencies:
   pool: ^1.4.0
   retry: ^3.0.0+1
   dio: ^3.0.7
+  cookie_jar: ^1.0.0
   dio_cookie_manager: ^1.0.0
   html: ^0.14.0+3
   intl: ^0.16.0
