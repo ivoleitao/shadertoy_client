@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Example",
+            "program": "example/example.dart",
+            "args": [],
+            "request": "launch",
+            "type": "dart"
+        },
+        {
             "name": "[Site] Login",
             "program": "example/site/login.dart",
             "args": [],
