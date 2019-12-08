@@ -25,7 +25,7 @@ class ShadertoyHybridClient extends ShadertoyBaseClient
   ///
   /// * [siteOptions]: Options for site client
   /// * [wsOptions]: Options for the REST client
-  /// * [dio]: A dio client instance
+  /// * [client]: A dio client instance
   ShadertoyHybridClient(ShadertoySiteOptions siteOptions,
       {ShadertoyWSOptions wsOptions, Dio client}) {
     client ??= Dio(BaseOptions(baseUrl: context.baseUrl));

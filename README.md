@@ -1,5 +1,5 @@
 # shadertoy_client
-A [Shadertoy API](https://github.com/ivoleitao/shadertoy_api) http client implementation
+A [Shadertoy API](https://github.com/ivoleitao/shadertoy_api) HTTP client implementation
 
 [![Pub Package](https://img.shields.io/pub/v/shadertoy_client.svg?style=flat-square)](https://pub.dartlang.org/packages/shadertoy_client)
 [![Build Status](https://github.com/ivoleitao/shadertoy_api/workflows/build/badge.svg)](https://github.com/ivoleitao/shadertoy_client/actions)
