@@ -1,0 +1,161 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:pool/pool.dart';
+import 'package:shadertoy_api/shadertoy_api.dart';
+import 'package:shadertoy_client/src/base_client.dart';
+import 'package:shadertoy_client/src/ws/ws_options.dart';
+
+/// A Shadertoy REST API client
+///
+/// Provides an implementation of the [ShadertoyWS] thus allowing the creation
+/// of a client to access all the methods provided by the shadertoy REST API
+/// as described in the Shadertoy [howto](https://www.shadertoy.com/howto)
+class ShadertoyWSClient extends ShadertoyHttpClient<ShadertoyWSOptions>
+    implements ShadertoyWS {
+  /// Creates a [ShadertoyWSClient]
+  ///
+  /// * [options]: The [ShadertoyWSOptions] used to configure this client
+  /// * [client]: A pre-initialized [Dio] client
+  ShadertoyWSClient(ShadertoyWSOptions options, {Dio client})
+      : super(options, client: client);
+
+  /// Builds a [ShadertoyWSClient] out of the most common set of configurations
+  ///
+  /// * [apiKey]: The API key to use
+  ShadertoyWSClient.build(String apiKey)
+      : super(ShadertoyWSOptions(apiKey: apiKey));
+
+  /// Finds a [Shader] by Id
+  ///
+  /// [shaderId]: The id of the shader
+  ///
+  /// Returns a [FindShaderResponse] with the [Shader] or a [ResponseError]
+  Future<FindShaderResponse> _getShaderById(String shaderId) {
+    return client.get('${options.apiPath}/shaders/$shaderId', queryParameters: {
+      'key': options.apiKey
+    }).then((Response<dynamic> response) => jsonResponse<FindShaderResponse>(
+        response, (data) => FindShaderResponse.fromJson(data),
+        context: CONTEXT_SHADER, target: shaderId));
+  }
+
+  @override
+  Future<FindShaderResponse> findShaderById(String shaderId) {
+    return _getShaderById(shaderId).catchError(
+        (de) => FindShaderResponse(
+            error:
+                toResponseError(de, context: CONTEXT_SHADER, target: shaderId)),
+        test: isDioError);
+  }
+
+  /// Finds shaders by ids
+  ///
+  /// * [shaderIds]: The list of shaders
+  ///
+  /// Returns a [FindShadersResponse] with the list of [Shader] obtained or a [ResponseError]
+  Future<FindShadersResponse> _getShadersByIdSet(Set<String> shaderIds) {
+    var shaderTaskPool = Pool(options.poolMaxAllocatedResources,
+        timeout: Duration(seconds: options.poolTimeout));
+
+    return Future.wait(shaderIds.map((id) => pooledRetry(
+            shaderTaskPool,
+            () => findShaderById(id).then((FindShaderResponse sr) =>
+                FindShaderResponse(shader: sr.shader)))))
+        .then((l) => FindShadersResponse(shaders: l));
+  }
+
+  @override
+  Future<FindShadersResponse> findShadersByIdSet(Set<String> shaderIds) {
+    return _getShadersByIdSet(shaderIds).catchError(
+        (de) => FindShadersResponse(
+            error: toResponseError(de, context: CONTEXT_SHADER)),
+        test: isDioError);
+  }
+
+  /// Finds shader ids
+  ///
+  /// * [term]: Shaders that have [term] in the name or in description
+  /// * [filters]: A set of tag filters
+  /// * [sort]: The sort order of the shaders
+  /// * [from]: A 0 based index for results returned
+  /// * [num]: The total number of results
+  ///
+  /// Returns a [FindShaderIdsResponse] with a list of ids or a [ResponseError]
+  Future<FindShaderIdsResponse> _getShaderIds(
+      {String term, Set<String> filters, Sort sort, int from, int num}) {
+    var sb = StringBuffer('${options.apiPath}/shaders/query');
+
+    if (term != null && term.isNotEmpty) {
+      sb.write('/$term');
+    }
+
+    sb.write('?key=${options.apiKey}');
+
+    if (filters != null) {
+      for (var filter in filters) {
+        sb.write('&filter=$filter');
+      }
+    }
+
+    if (sort != null) {
+      sb.write('&sort=${sort.toString().split('.').last}');
+    }
+
+    if (from != null) {
+      sb.write('&from=$from');
+    }
+
+    if (num != null) {
+      sb.write('&num=$num');
+    }
+
+    return client.get(sb.toString()).then((Response<dynamic> response) =>
+        jsonResponse<FindShaderIdsResponse>(
+            response, (data) => FindShaderIdsResponse.fromJson(data)));
+  }
+
+  @override
+  Future<FindShadersResponse> findShaders(
+      {String term, Set<String> filters, Sort sort, int from, int num}) {
+    return _getShaderIds(
+            term: term,
+            filters: filters,
+            sort: sort,
+            from: from,
+            num: num ?? options.shaderCount)
+        .then((r) => _getShadersByIdSet(r.ids.toSet()))
+        .catchError(
+            (de) => FindShadersResponse(
+                error: toResponseError(de, context: CONTEXT_SHADER)),
+            test: isDioError);
+  }
+
+  @override
+  Future<FindShaderIdsResponse> findAllShaderIds() {
+    return client
+        .get('${options.apiPath}/shaders',
+            queryParameters: {'key': options.apiKey})
+        .then((Response<dynamic> response) =>
+            jsonResponse<FindShaderIdsResponse>(
+                response, (data) => FindShaderIdsResponse.fromJson(data)))
+        .catchError(
+            (de) => FindShaderIdsResponse(
+                error: toResponseError(de, context: CONTEXT_SHADER)),
+            test: isDioError);
+  }
+
+  @override
+  Future<FindShaderIdsResponse> findShaderIds(
+      {String term, Set<String> filters, Sort sort, int from, int num}) {
+    return _getShaderIds(
+            term: term,
+            filters: filters,
+            sort: sort,
+            from: from,
+            num: num ?? options.shaderCount)
+        .catchError(
+            (de) => FindShaderIdsResponse(
+                error: toResponseError(de, context: CONTEXT_SHADER)),
+            test: isDioError);
+  }
+}

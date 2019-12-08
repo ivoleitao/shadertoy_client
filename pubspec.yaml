@@ -1,0 +1,34 @@
+name: shadertoy_client
+version: 1.0.0-dev.1
+description: >-
+  An http client implementation of the shadertoy API.
+author: Ivo Leitão <ivo.leitao@gmail.com>
+homepage: https://github.com/ivoleitao/shadertoy_client
+
+environment:
+  sdk: ">=2.6.0 <3.0.0"
+
+dependencies:
+  path: ^1.6.4
+  equatable: ^1.0.0
+  meta: ^1.1.8
+  json_annotation: ^3.0.0
+  pool: ^1.4.0
+  retry: ^3.0.0+1
+  dio: ^3.0.7
+  dio_cookie_manager: ^1.0.0
+  html: ^0.14.0+3
+  intl: ^0.16.0
+  dotenv: ^2.0.0
+  shadertoy_api: ^1.0.0-dev.4
+  #shadertoy_api:
+  #  path: ../shadertoy_api
+
+dev_dependencies:
+  pedantic: ^1.9.0
+  build_runner: ^1.7.2
+  build_verify: ^1.1.1
+  json_serializable: ^3.2.3
+  test: ^1.9.4
+  test_coverage: ^0.4.0
+  mockito: ^4.1.1
