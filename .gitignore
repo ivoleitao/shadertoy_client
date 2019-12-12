@@ -16,6 +16,9 @@ doc/api/
 coverage/
 test/.test_coverage.dart
 
+# File with environment configurations
+.env*
+
 # Avoid committing generated Javascript files:
 *.dart.js
 *.info.json      # Produced by the --dump-info flag.
