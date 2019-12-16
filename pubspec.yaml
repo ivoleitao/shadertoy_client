@@ -8,22 +8,22 @@ author: Ivo Leitão <ivo.leitao@gmail.com>
 homepage: https://github.com/ivoleitao/shadertoy_client
 
 environment:
-  sdk: ">=2.6.0 <3.0.0"
+  sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
   path: ^1.6.4
-  equatable: ^1.0.0
+  equatable: ^1.0.1
   meta: ^1.1.8
   json_annotation: ^3.0.0
   pool: ^1.4.0
   retry: ^3.0.0+1
   dio: ^3.0.7
-  cookie_jar: ^1.0.0
+  cookie_jar: ^1.0.1
   dio_cookie_manager: ^1.0.0
   html: ^0.14.0+3
   intl: ^0.16.0
   dotenv: ^2.0.0
-  shadertoy_api: ^1.0.0-dev.4
+  shadertoy_api: ^1.0.0-dev.5
   #shadertoy_api:
   #  path: ../shadertoy_api
 

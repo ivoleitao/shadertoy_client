@@ -23,7 +23,7 @@ void main(List<String> arguments) async {
   // Gets the shader by id
   var shaderId = '3lsSzf';
   var sr = await ws.findShaderById(shaderId);
-  if (!sr.hasError()) {
+  if (sr.ok) {
     // If there is no error print the shader contents
     print('${sr?.shader?.info?.id}');
     print('\tName: ${sr?.shader?.info?.name}');
@@ -47,7 +47,7 @@ void main(List<String> arguments) async {
 
   // Gets the firs 5 comments for this shader
   var sc = await site.findCommentsByShaderId(shaderId);
-  if (!sc.hasError()) {
+  if (sc.ok) {
     // If there is no error print the shader comments
     sc?.comments?.take(5)?.forEach((c) => print('${c.userId}: ${c.text}'));
   } else {
