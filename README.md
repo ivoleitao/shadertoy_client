@@ -328,7 +328,7 @@ WtfGWn
 #### Find shader by `term` and obtain the shader comments
 
 ```dart
-  var client = ShadertoyHybridClient.build(apiKey: apiKey);
+  var client = ShadertoyHybridClient.build(apiKey: '<apiKey>');
   var fsr = await client.findShaders(term: 'Happy Jumping');
 
   if (fsr.ok) {
