@@ -157,6 +157,10 @@ abstract class ShadertoyHttpClient<T extends ShadertoyClientOptions>
         pool, () => retryOptions.retry(fn, retryIf: (e) => isDioError(e)));
   }
 
+  /// Catches and handles a specific type of error in a future
+  ///
+  /// * [future]: The future
+  /// * [handle]: The error handling function
   Future<R> _catchError<R, E>(
       Future<R> future, FutureOr<R> Function(E) handle) {
     return future.catchError((e) {
@@ -167,6 +171,10 @@ abstract class ShadertoyHttpClient<T extends ShadertoyClientOptions>
     });
   }
 
+  /// Catches and handles a [DioError] error in a future
+  ///
+  /// * [future]: The future
+  /// * [handle]: The error handling function
   Future<R> catchDioError<R>(
       Future<R> future, FutureOr<R> Function(DioError) handle) {
     return _catchError<R, DioError>(future, handle);
