@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:shadertoy_api/shadertoy_api.dart';
 import 'package:shadertoy_client/shadertoy_client.dart';
 
@@ -9,5 +7,5 @@ void main(List<String> arguments) async {
   var response = await site.findPlaylistById('week');
   print('${response?.playlist?.name}');
   print('${response?.playlist?.count} shader id(s)');
-  response.playlist?.shaders?.forEach((element) => stdout.write('$element '));
+  response.playlist?.shaders?.forEach((shader) => print('$shader'));
 }

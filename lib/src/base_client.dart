@@ -156,4 +156,19 @@ abstract class ShadertoyHttpClient<T extends ShadertoyClientOptions>
     return pooled(
         pool, () => retryOptions.retry(fn, retryIf: (e) => isDioError(e)));
   }
+
+  Future<R> _catchError<R, E>(
+      Future<R> future, FutureOr<R> Function(E) handle) {
+    return future.catchError((e) {
+      if (e is E) {
+        return handle(e);
+      }
+      return Future.error(e);
+    });
+  }
+
+  Future<R> catchDioError<R>(
+      Future<R> future, FutureOr<R> Function(DioError) handle) {
+    return _catchError<R, DioError>(future, handle);
+  }
 }

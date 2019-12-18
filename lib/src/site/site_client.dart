@@ -62,33 +62,28 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     var clientOptions = Options(
         contentType:
             ContentType.parse('application/x-www-form-urlencoded').toString(),
-        headers: {HttpHeaders.refererHeader: '${context.signInUrl}'});
+        headers: {HttpHeaders.refererHeader: '${context.signInUrl}'},
+        followRedirects: false,
+        validateStatus: (int status) => status == 302);
 
-    return client
-        .post('/${context.signInPath}', data: data, options: clientOptions)
-        .then((Response<dynamic> response) => LoginResponse())
-        .catchError((de) {
-      var err = de as DioError;
-
-      if (err.response.statusCode == HttpStatus.movedTemporarily &&
-          err.response.headers.value(HttpHeaders.locationHeader) == '/') {
-        return LoginResponse();
-      }
-
+    return catchDioError<LoginResponse>(
+        client
+            .post('/${context.signInPath}', data: data, options: clientOptions)
+            .then((Response<dynamic> response) => LoginResponse()), (de) {
       return LoginResponse(error: toResponseError(de));
-    }, test: isDioError);
+    });
   }
 
   @override
   Future<LogoutResponse> logout() {
-    return client
-        .get('/${context.signOutPath}')
-        .then((Response<dynamic> response) {
-      clearCookies();
-      return LogoutResponse();
-    }).catchError((de) {
-      return LogoutResponse(error: toResponseError(de));
-    }, test: isDioError);
+    return catchDioError<LogoutResponse>(
+        client
+            .get('/${context.signOutPath}')
+            .then((Response<dynamic> response) {
+          clearCookies();
+          return LogoutResponse();
+        }),
+        (de) => LogoutResponse(error: toResponseError(de)));
   }
 
   /// Finds shaders by ids
@@ -133,19 +128,19 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
   @override
   Future<FindShaderResponse> findShaderById(String shaderId) {
-    return _getShaderById(shaderId).catchError(
+    return catchDioError<FindShaderResponse>(
+        _getShaderById(shaderId),
         (de) => FindShaderResponse(
-            error:
-                toResponseError(de, context: CONTEXT_SHADER, target: shaderId)),
-        test: isDioError);
+            error: toResponseError(de,
+                context: CONTEXT_SHADER, target: shaderId)));
   }
 
   @override
   Future<FindShadersResponse> findShadersByIdSet(Set<String> ids) {
-    return _getShadersByIdSet(ids).catchError(
+    return catchDioError<FindShadersResponse>(
+        _getShadersByIdSet(ids),
         (de) => FindShadersResponse(
-            error: toResponseError(de, context: CONTEXT_SHADER)),
-        test: isDioError);
+            error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 
   /// Parses the number of returned shader's from the html
@@ -198,7 +193,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// browse, results, user and playlist pages
   FindShaderIdsResponse _parseShaderIds(Document doc) {
     int count;
-    var results = [];
+    var results = <String>[];
 
     count = _parseShaderPagerBottom(doc) ?? _parseShaderPagerTop(doc);
     if (count == null) {
@@ -333,7 +328,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
         }
 
         return Future.wait(tasks).then((List<FindShaderIdsResponse> responses) {
-          var results = [];
+          var results = <String>[];
 
           for (var i = 0; i < responses.length; i++) {
             var response = responses[i];
@@ -359,50 +354,47 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   @override
   Future<FindShadersResponse> findShaders(
       {String term, Set<String> filters, Sort sort, int from, int num}) {
-    var result = _getShaderIds(
-            term: term,
-            filters: filters,
-            sort: sort,
-            from: from,
-            num: num ?? options.shaderCount)
-        .then((FindShaderIdsResponse response) {
-      if (response.error != null) {
-        return FindShadersResponse(
-            error: ResponseError.backendResponse(
-                message:
-                    'Unable to get the list of shader ids: ${response.error.message}'));
-      }
+    return catchDioError<FindShadersResponse>(
+        _getShaderIds(
+                term: term,
+                filters: filters,
+                sort: sort,
+                from: from,
+                num: num ?? options.shaderCount)
+            .then((FindShaderIdsResponse response) {
+          if (response.error != null) {
+            return FindShadersResponse(
+                error: ResponseError.backendResponse(
+                    message:
+                        'Unable to get the list of shader ids: ${response.error.message}'));
+          }
 
-      return _getShadersByIdSet(response.ids.toSet());
-    });
-
-    return result.catchError(
+          return _getShadersByIdSet(response.ids.toSet());
+        }),
         (de) => FindShadersResponse(
-            error: toResponseError(de, context: CONTEXT_SHADER)),
-        test: isDioError);
+            error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 
   @override
   Future<FindShaderIdsResponse> findAllShaderIds() {
-    return _getShaderIds().catchError(
+    return catchDioError<FindShaderIdsResponse>(
+        _getShaderIds(),
         (de) => FindShaderIdsResponse(
-            error: toResponseError(de, context: CONTEXT_SHADER)),
-        test: isDioError);
+            error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 
   @override
   Future<FindShaderIdsResponse> findShaderIds(
       {String term, Set<String> filters, Sort sort, int from, int num}) {
-    return _getShaderIds(
+    return catchDioError<FindShaderIdsResponse>(
+        _getShaderIds(
             term: term,
             filters: filters,
             sort: sort,
             from: from,
-            num: options.shaderCount)
-        .catchError(
-            (de) => FindShaderIdsResponse(
-                error: toResponseError(de, context: CONTEXT_SHADER)),
-            test: isDioError);
+            num: options.shaderCount),
+        (de) => FindShaderIdsResponse(
+            error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 
   /// Builds the user url used in the call to Shadertoy user page.
@@ -506,7 +498,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
         return Future.wait(tasks)
             .then((List<FindShaderIdsResponse> findShaderIdsResponses) {
-          var results = [];
+          var results = <String>[];
 
           for (var i = 0; i < findShaderIdsResponses.length; i++) {
             var findShaderIdsResponse = findShaderIdsResponses[i];
@@ -661,55 +653,47 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
   @override
   Future<FindUserResponse> findUserById(String userId) {
-    return client
-        .get(_getUserUrl(userId))
-        .then((Response<dynamic> response) =>
-            _parseUser(userId, parse(response.data)))
-        .catchError(
-            (de) => FindUserResponse(
-                error:
-                    toResponseError(de, context: CONTEXT_USER, target: userId)),
-            test: isDioError);
+    return catchDioError<FindUserResponse>(
+        client.get(_getUserUrl(userId)).then((Response<dynamic> response) =>
+            _parseUser(userId, parse(response.data))),
+        (de) => FindUserResponse(
+            error: toResponseError(de, context: CONTEXT_USER, target: userId)));
   }
 
   @override
   Future<FindShadersResponse> findShadersByUserId(String userId,
       {Set<String> filters, Sort sort, int from, int num}) {
-    var output = _getShaderIdsByUserId(userId,
-            filters: filters,
-            sort: sort,
-            from: from,
-            num: num ?? options.shaderCount)
-        .then((FindShaderIdsResponse response) {
-      if (response.error != null) {
-        return FindShadersResponse(
-            error: ResponseError.backendResponse(
-                message:
-                    'Unable to get the list of shader ids: ${response.error.message}',
-                target: userId));
-      }
+    return catchDioError<FindShadersResponse>(
+        _getShaderIdsByUserId(userId,
+                filters: filters,
+                sort: sort,
+                from: from,
+                num: num ?? options.shaderCount)
+            .then((FindShaderIdsResponse response) {
+          if (response.error != null) {
+            return FindShadersResponse(
+                error: ResponseError.backendResponse(
+                    message:
+                        'Unable to get the list of shader ids: ${response.error.message}',
+                    target: userId));
+          }
 
-      return findShadersByIdSet(response.ids.toSet());
-    });
-
-    return output.catchError(
+          return findShadersByIdSet(response.ids.toSet());
+        }),
         (de) => FindShadersResponse(
-            error: toResponseError(de, context: CONTEXT_USER, target: userId)),
-        test: isDioError);
+            error: toResponseError(de, context: CONTEXT_USER, target: userId)));
   }
 
   @override
   Future<FindShaderIdsResponse> findShaderIdsByUserId(String userId,
       {Set<String> filters, Sort sort, int from, int num}) {
-    return _getShaderIdsByUserId(userId,
-            from: from, num: num ?? options.shaderCount)
-        .then((userResponse) => FindShaderIdsResponse(
-            count: userResponse.ids.length, ids: userResponse.ids))
-        .catchError(
-            (de) => FindShaderIdsResponse(
-                error:
-                    toResponseError(de, context: CONTEXT_USER, target: userId)),
-            test: isDioError);
+    return catchDioError<FindShaderIdsResponse>(
+        _getShaderIdsByUserId(userId,
+                from: from, num: num ?? options.shaderCount)
+            .then((userResponse) => FindShaderIdsResponse(
+                count: userResponse.ids.length, ids: userResponse.ids)),
+        (de) => FindShaderIdsResponse(
+            error: toResponseError(de, context: CONTEXT_USER, target: userId)));
   }
 
   @override
@@ -721,47 +705,50 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
           HttpHeaders.refererHeader: '${context.getShaderViewUrl(shaderId)}'
         });
 
-    return client
-        .post('/comment', data: data, options: options)
-        .then((Response<dynamic> response) => jsonResponse<CommentsResponse>(
-            response, (data) => CommentsResponse.from(data),
-            context: CONTEXT_SHADER, target: shaderId))
-        .then((c) {
-      var userIds = c?.userIds;
-      var dates = c?.date;
-      var texts = c?.text;
+    return catchDioError<FindCommentsResponse>(
+        client
+            .post('/comment', data: data, options: options)
+            .then((Response<dynamic> response) =>
+                jsonResponse<CommentsResponse>(
+                    response, (data) => CommentsResponse.from(data),
+                    context: CONTEXT_SHADER, target: shaderId))
+            .then((c) {
+          var userIds = c?.userIds;
+          var dates = c?.date;
+          var texts = c?.text;
 
-      var comments = List<Comment>(max(
-          max(texts?.length ?? 0, dates?.length ?? 0), userIds?.length ?? 0));
+          var comments = List<Comment>(max(
+              max(texts?.length ?? 0, dates?.length ?? 0),
+              userIds?.length ?? 0));
 
-      for (var i = 0; i < comments.length; i++) {
-        String userId;
-        DateTime date;
-        String text;
+          for (var i = 0; i < comments.length; i++) {
+            String userId;
+            DateTime date;
+            String text;
 
-        if (userIds != null && userIds.length > i) {
-          userId = userIds[i];
-        }
+            if (userIds != null && userIds.length > i) {
+              userId = userIds[i];
+            }
 
-        if (dates != null && dates.length > i) {
-          date =
-              DateTime.fromMillisecondsSinceEpoch(int.parse(dates[i]) * 1000);
-        }
+            if (dates != null && dates.length > i) {
+              date = DateTime.fromMillisecondsSinceEpoch(
+                  int.parse(dates[i]) * 1000);
+            }
 
-        if (texts != null && texts.length > i) {
-          text = texts[i];
-        }
+            if (texts != null && texts.length > i) {
+              text = texts[i];
+            }
 
-        comments[i] =
-            Comment(shaderId: shaderId, userId: userId, date: date, text: text);
-      }
+            comments[i] = Comment(
+                shaderId: shaderId, userId: userId, date: date, text: text);
+          }
 
-      return FindCommentsResponse(total: comments.length, comments: comments);
-    }).catchError(
-            (de) => FindCommentsResponse(
-                error: toResponseError(de,
-                    context: CONTEXT_COMMENT, target: shaderId)),
-            test: isDioError);
+          return FindCommentsResponse(
+              total: comments.length, comments: comments);
+        }),
+        (de) => FindCommentsResponse(
+            error: toResponseError(de,
+                context: CONTEXT_COMMENT, target: shaderId)));
   }
 
   /// Builds the playlist url used in the call to Shadertoy playlist page.
@@ -889,7 +876,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
         return Future.wait(tasks)
             .then((List<FindShaderIdsResponse> findShaderIdsResponses) {
-          var shaders = [];
+          var shaders = <String>[];
 
           for (var i = 0; i < findShaderIdsResponses.length; i++) {
             var findShaderIdsResponse = findShaderIdsResponses[i];
@@ -920,73 +907,68 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
   @override
   Future<FindPlaylistResponse> findPlaylistById(String playlistId) {
-    return _getPlaylistByPlaylistId(playlistId).catchError(
+    return catchDioError<FindPlaylistResponse>(
+        _getPlaylistByPlaylistId(playlistId),
         (de) => FindPlaylistResponse(
             error: toResponseError(de,
-                context: CONTEXT_PLAYLIST, target: playlistId)),
-        test: isDioError);
+                context: CONTEXT_PLAYLIST, target: playlistId)));
   }
 
   @override
   Future<FindShadersResponse> findShadersByPlaylistId(String playlistId,
       {int from, int num}) {
-    var output = _getPlaylistByPlaylistId(playlistId,
-            from: from, num: num ?? options.shaderCount)
-        .then((FindPlaylistResponse response) {
-      if (response.error != null) {
-        return FindShadersResponse(
-            error: ResponseError.backendResponse(
-                message:
-                    'Unable to get the list of shader ids: ${response.error.message}'));
-      }
+    return catchDioError<FindShadersResponse>(
+        _getPlaylistByPlaylistId(playlistId,
+                from: from, num: num ?? options.shaderCount)
+            .then((FindPlaylistResponse response) {
+          if (response.error != null) {
+            return FindShadersResponse(
+                error: ResponseError.backendResponse(
+                    message:
+                        'Unable to get the list of shader ids: ${response.error.message}'));
+          }
 
-      return findShadersByIdSet(response.playlist.shaders.toSet());
-    });
-
-    return output.catchError(
+          return findShadersByIdSet(response.playlist.shaders.toSet());
+        }),
         (de) => FindShadersResponse(
             error: toResponseError(de,
-                context: CONTEXT_PLAYLIST, target: playlistId)),
-        test: isDioError);
+                context: CONTEXT_PLAYLIST, target: playlistId)));
   }
 
   @override
   Future<FindShaderIdsResponse> findShaderIdsByPlaylistId(String playlistId,
       {int from, int num}) {
-    return _getPlaylistByPlaylistId(playlistId,
-            from: from, num: num ?? options.shaderCount)
-        .then((playlistResponse) => FindShaderIdsResponse(
-            count: playlistResponse.playlist.shaders.length,
-            ids: playlistResponse.playlist.shaders))
-        .catchError(
-            (de) => FindShaderIdsResponse(
-                error: toResponseError(de,
-                    context: CONTEXT_PLAYLIST, target: playlistId)),
-            test: isDioError);
+    return catchDioError<FindShaderIdsResponse>(
+        _getPlaylistByPlaylistId(playlistId,
+                from: from, num: num ?? options.shaderCount)
+            .then((playlistResponse) => FindShaderIdsResponse(
+                count: playlistResponse.playlist.shaders.length,
+                ids: playlistResponse.playlist.shaders)),
+        (de) => FindShaderIdsResponse(
+            error: toResponseError(de,
+                context: CONTEXT_PLAYLIST, target: playlistId)));
   }
 
   @override
   Future<DownloadFileResponse> downloadShaderPicture(String shaderId) {
-    return client
-        .get<List<int>>('/${context.getShaderPicturePath(shaderId)}',
-            options: Options(responseType: ResponseType.bytes))
-        .then((response) => DownloadFileResponse(bytes: response.data))
-        .catchError(
-            (de) => DownloadFileResponse(
-                error: toResponseError(de,
-                    context: CONTEXT_SHADER, target: shaderId)),
-            test: isDioError);
+    return catchDioError<DownloadFileResponse>(
+        client
+            .get<List<int>>('/${context.getShaderPicturePath(shaderId)}',
+                options: Options(responseType: ResponseType.bytes))
+            .then((response) => DownloadFileResponse(bytes: response.data)),
+        (de) => DownloadFileResponse(
+            error: toResponseError(de,
+                context: CONTEXT_SHADER, target: shaderId)));
   }
 
   @override
   Future<DownloadFileResponse> downloadMedia(String inputPath) {
-    return client
-        .get<List<int>>('$inputPath',
-            options: Options(responseType: ResponseType.bytes))
-        .then((response) => DownloadFileResponse(bytes: response.data))
-        .catchError(
-            (de) => DownloadFileResponse(
-                error: toResponseError(de, context: CONTEXT_SHADER)),
-            test: isDioError);
+    return catchDioError<DownloadFileResponse>(
+        client
+            .get<List<int>>('$inputPath',
+                options: Options(responseType: ResponseType.bytes))
+            .then((response) => DownloadFileResponse(bytes: response.data)),
+        (de) => DownloadFileResponse(
+            error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 }

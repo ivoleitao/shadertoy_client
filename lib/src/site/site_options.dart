@@ -64,7 +64,7 @@ class ShadertoySiteOptions extends ShadertoyClientOptions {
         assert(pageUserShaderCount != null && pageUserShaderCount >= 1),
         assert(pagePlaylistShaderCount != null && pagePlaylistShaderCount >= 1),
         super(
-            supportsCookies: false,
+            supportsCookies: true,
             poolMaxAllocatedResources: poolMaxAlocatedResources,
             poolTimeout: poolTimeout,
             retryMaxAttempts: retryMaxAttempts,

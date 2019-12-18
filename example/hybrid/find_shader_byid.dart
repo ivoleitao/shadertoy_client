@@ -14,9 +14,9 @@ void main(List<String> arguments) async {
     return;
   }
 
-  var ws = ShadertoyWSClient.build(apiKey);
+  var hybrid = ShadertoyHybridClient.build(apiKey: apiKey);
 
-  var sr = await ws.findShaders(term: 'elevated');
-  print('${sr?.total} shader id(s)');
-  sr?.shaders?.forEach((response) => print('${response?.shader?.info?.id} '));
+  var sr = await hybrid.findShaderById('3lsSzf');
+  print('${sr?.shader?.info?.id}');
+  print('\tName: ${sr?.shader?.info?.name}');
 }
