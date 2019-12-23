@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:html/dom.dart' show Document, Element, Node;
 import 'package:html/parser.dart' show parse;
 import 'package:intl/intl.dart';
@@ -271,7 +272,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     }
 
     if (sort != null) {
-      queryParameters.add('sort=${sort.toString().split('.').last}');
+      queryParameters.add('sort=${EnumToString.parse(sort)}');
     }
 
     if (from != null) {
@@ -420,7 +421,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     }
 
     if (sort != null) {
-      queryParameters.add('sort=${sort.toString().split('.').last}');
+      queryParameters.add('sort=${EnumToString.parse(sort)}');
     }
 
     if (from != null) {

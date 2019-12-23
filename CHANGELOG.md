@@ -1,3 +1,7 @@
+## 1.0.0-dev.4
+- Added enum_to_string dependency to work better with enums
+- Reverted to debugConsole
+
 ## 1.0.0-dev.3
 
 - Updated badges

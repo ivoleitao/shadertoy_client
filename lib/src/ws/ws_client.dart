@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:pool/pool.dart';
 import 'package:shadertoy_api/shadertoy_api.dart';
 import 'package:shadertoy_client/src/base_client.dart';
@@ -98,7 +99,7 @@ class ShadertoyWSClient extends ShadertoyHttpClient<ShadertoyWSOptions>
     }
 
     if (sort != null) {
-      sb.write('&sort=${sort.toString().split('.').last}');
+      sb.write('&sort=${EnumToString.parse(sort)}');
     }
 
     if (from != null) {
