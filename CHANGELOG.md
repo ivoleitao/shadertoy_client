@@ -1,6 +1,7 @@
 ## 1.0.0-dev.4
 - Added enum_to_string dependency to work better with enums
 - Reverted to debugConsole
+- Updated to next version of the API
 
 ## 1.0.0-dev.3
 
