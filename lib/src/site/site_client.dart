@@ -69,7 +69,8 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
     return catchDioError<LoginResponse>(
         client
-            .post('/${context.signInPath}', data: data, options: clientOptions)
+            .post('/${ShadertoyContext.SignInPath}',
+                data: data, options: clientOptions)
             .then((Response<dynamic> response) => LoginResponse()), (de) {
       return LoginResponse(error: toResponseError(de));
     });
@@ -79,7 +80,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   Future<LogoutResponse> logout() {
     return catchDioError<LogoutResponse>(
         client
-            .get('/${context.signOutPath}')
+            .get('/${ShadertoyContext.SignOutPath}')
             .then((Response<dynamic> response) {
           clearCookies();
           return LogoutResponse();
@@ -715,8 +716,8 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                     context: CONTEXT_SHADER, target: shaderId))
             .then((c) {
           var userIds = c?.userIds;
-          var dates = c?.date;
-          var texts = c?.text;
+          var dates = c?.dates;
+          var texts = c?.texts;
 
           var comments = List<Comment>(max(
               max(texts?.length ?? 0, dates?.length ?? 0),
