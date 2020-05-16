@@ -9,7 +9,7 @@ A [Shadertoy API](https://github.com/ivoleitao/shadertoy_api) HTTP client implem
 
 ## Introduction
 
-This package implements the client API's defined in the [shadertoy_api](https://pub.dev/packages/shadertoy_api) package providing access to the [Shadertoy](https://www.shadertoy.com) REST and Site APIs. 
+This package implements the client APIs defined in the [shadertoy_api](https://pub.dev/packages/shadertoy_api) package providing access to the [Shadertoy](https://www.shadertoy.com) REST and Site APIs. 
 
 ## Capabilities
 
@@ -19,9 +19,9 @@ This package provides a number of operations through two types of clients:
 
 * `Find shader` by id
 * `Find shaders` from a list of id's
-* `Query shaders by term`, tags and sort them by *name*, *likes*, *views*, *neweness* and by *hotness* (proportional to popularity and inversly propostional to lifetime). All the query results are paginated.
+* `Query shaders by term`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated.
 * `Find all shader ids`
-* `Find shaders ids by term`, tags and sort them by *name*, *likes*, *views*, *neweness* and by *hotness* (proportional to popularity and inversly propostional to lifetime). All the query results are paginated.
+* `Find shaders ids by term`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated.
 
 **Site APIs**
 
@@ -30,7 +30,7 @@ All the REST API features plus the following:
 * `Logout`
 * `Find user` by id
 * `Find shaders by user id`
-* `Query shaders by user id`, tags and sort them by *name*, *likes*, *views*, *neweness* and by *hotness* (proportional to popularity and inversly propotional to lifetime). All the query results are paginated as well.
+* `Query shaders by user id`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated as well.
 * `Find comments` by shader id
 * `Find playlist` by id.
 * `Query shaders by playlist id`. All the query results are paginated.
@@ -44,7 +44,7 @@ Add this to your `pubspec.yaml` (or create it):
 
 ```dart
 dependencies:
-    shadertoy_client: ^1.0.0-dev.4
+    shadertoy_client: ^1.0.0-dev.6
 ```
 
 Run the following command to install dependencies:
@@ -59,7 +59,7 @@ Optionally use the following command to run the tests:
 pub run test
 ```
 
-Finaly, to start developing import the library:
+Finally, to start developing import the library:
 
 ```dart
 import 'package:shadertoy_client/shadertoy_client.dart';
@@ -153,7 +153,7 @@ XltSWH
 
 ### ShadertoySiteClient
 
-> Note: replace `user` and `password`, with the user credentials, where aplicable
+> Note: replace `user` and `password`, with the user credentials, where applicable
 
 #### Find a shader by id using a anonymous site client 
 
