@@ -4,35 +4,34 @@ description: >-
   An http client implementation of the shadertoy API using
   Dio Http client. Supports the REST API (using an application key) 
   and the Site API (registered and anonymous users)
-author: Ivo Leitão <ivo.leitao@gmail.com>
 homepage: https://github.com/ivoleitao/shadertoy_client
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.8.0 <3.0.0"
 
 dependencies:
-  enum_to_string: ^1.0.8
-  path: ^1.6.4
-  equatable: ^1.0.1
+  enum_to_string: ^1.0.9
+  path: ^1.7.0
+  equatable: ^1.1.1
   meta: ^1.1.8
-  json_annotation: ^3.0.0
+  json_annotation: ^3.0.1
   pool: ^1.4.0
   retry: ^3.0.0+1
-  dio: ^3.0.7
+  dio: ^3.0.9
   cookie_jar: ^1.0.1
   dio_cookie_manager: ^1.0.0
   html: ^0.14.0+3
-  intl: ^0.16.0
+  intl: ^0.16.1
   dotenv: ^2.0.0
-  shadertoy_api: ^1.0.0-dev.7
+  shadertoy_api: ^1.0.0
   #shadertoy_api:
   #  path: ../shadertoy_api
 
 dev_dependencies:
   pedantic: ^1.9.0
-  build_runner: ^1.7.2
+  build_runner: ^1.9.0
   build_verify: ^1.1.1
-  json_serializable: ^3.2.3
-  test: ^1.9.4
-  test_coverage: ^0.4.0
+  json_serializable: ^3.3.0
+  test: ^1.14.3
+  test_coverage: ^0.4.1
   mockito: ^4.1.1

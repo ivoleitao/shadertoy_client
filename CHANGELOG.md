@@ -1,5 +1,7 @@
 ## 1.0.0-dev.5
-- TODO
+- Updated to shadertoy_api 1.0 version
+- Updated sdk to 2.8
+- Updated other dependencies
 
 ## 1.0.0-dev.4
 - Added enum_to_string dependency to work better with enums
