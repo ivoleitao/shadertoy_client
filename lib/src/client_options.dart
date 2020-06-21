@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 /// Base class for the client options
 ///
 /// It provides a number of options that can be configured regardless the specific implementation of the client
@@ -44,11 +42,11 @@ abstract class ShadertoyClientOptions {
   /// * [retryMaxAttempts]: The maximum number of attempts before giving up
   /// * [shaderCount]: The number of shaders fetched in a paged call
   ShadertoyClientOptions(
-      {@required this.supportsCookies,
-      @required this.poolMaxAllocatedResources,
-      @required this.poolTimeout,
-      @required this.retryMaxAttempts,
-      @required this.shaderCount})
+      {this.supportsCookies,
+      this.poolMaxAllocatedResources,
+      this.poolTimeout,
+      this.retryMaxAttempts,
+      this.shaderCount})
       : assert(supportsCookies != null),
         assert(poolMaxAllocatedResources != null),
         assert(poolTimeout != null),
