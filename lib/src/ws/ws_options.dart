@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:shadertoy_client/shadertoy_client.dart';
 import 'package:shadertoy_client/src/client_options.dart';
 
@@ -25,7 +26,7 @@ class ShadertoyWSOptions extends ShadertoyClientOptions {
   /// * [retryMaxAttempts]: The maximum number of attempts at a failed request, defaults to [ShadertoyClientOptions.DefaultRetryMaxAttempts]
   /// * [shaderCount]: The number of shaders fetched on a paged call, defaults to [ShadertoyClientOptions.DefaultShaderCount]
   ShadertoyWSOptions(
-      {this.apiKey,
+      {@required this.apiKey,
       this.apiPath = DefaultApiPath,
       int poolMaxAllocatedResources =
           ShadertoyClientOptions.DefaultPoolMaxAllocatedResources,

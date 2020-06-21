@@ -10,6 +10,7 @@ environment:
   sdk: ">=2.8.0 <3.0.0"
 
 dependencies:
+  meta: ^1.1.8
   enum_to_string: ^1.0.9
   path: ^1.7.0
   equatable: ^1.2.0
