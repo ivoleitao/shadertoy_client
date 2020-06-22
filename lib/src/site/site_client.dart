@@ -553,7 +553,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     var aboutBuffer = StringBuffer();
 
     var elements = doc.querySelectorAll('#content>#divUser>table>tbody>tr>td');
-    if (elements.length != 3) {
+    if (elements.length < 3) {
       return FindUserResponse(
           error: ResponseError.backendResponse(
               message:
