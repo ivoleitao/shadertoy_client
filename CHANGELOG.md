@@ -1,6 +1,6 @@
 ## 1.0.0-dev.8
 
-- TODO
+- Corrected bug on the detection of the user table rows and cells for the user call
 
 ## 1.0.0-dev.7
 
