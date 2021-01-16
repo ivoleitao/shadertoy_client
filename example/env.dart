@@ -2,7 +2,7 @@ import 'package:envify/envify.dart';
 
 part 'env.g.dart';
 
-@Envify(path: 'example/.env')
+@Envify(path: '.env')
 abstract class Env {
   static const String apiKey = _Env.apiKey;
   static const String user = _Env.user;
