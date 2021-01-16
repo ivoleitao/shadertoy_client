@@ -1,0 +1,15 @@
+POST {{baseUrl}}/{{shadertoyPath}}
+Content-Type: application/x-www-form-urlencoded
+Referer: {{baseUrl}}/{{browsePath}} 
+
+s={"shaders":["wl3czN"]}
+&nt=1
+&nl=1
+###
+POST {{baseUrl}}/{{shadertoyPath}}
+Content-Type: application/x-www-form-urlencoded
+Referer: {{baseUrl}}/{{browsePath}} 
+
+s={"shaders":["ldd3DX","4slyRs","MlscWX","MscXzn","MsdGzl","4dKXDG","XsKGRW","MdV3Wz","4tySDW","MsG3Dz","4dKGWm","XtyGWD"]}
+&nt=1
+&nl=1

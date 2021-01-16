@@ -4,8 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:pool/pool.dart';
 import 'package:shadertoy_api/shadertoy_api.dart';
-import 'package:shadertoy_client/src/base_client.dart';
+import 'package:shadertoy_client/src/http_client.dart';
 import 'package:shadertoy_client/src/ws/ws_options.dart';
+
+/// The base Shadertoy Client API for WS access
+abstract class ShadertoyWS extends ShadertoyClient {}
 
 /// A Shadertoy REST API client
 ///
@@ -20,12 +23,6 @@ class ShadertoyWSClient extends ShadertoyHttpClient<ShadertoyWSOptions>
   /// * [client]: A pre-initialized [Dio] client
   ShadertoyWSClient(ShadertoyWSOptions options, {Dio client})
       : super(options, client: client);
-
-  /// Builds a [ShadertoyWSClient] out of the most common set of configurations
-  ///
-  /// * [apiKey]: The API key to use
-  ShadertoyWSClient.build(String apiKey)
-      : super(ShadertoyWSOptions(apiKey: apiKey));
 
   /// Finds a [Shader] by Id
   ///
@@ -58,19 +55,14 @@ class ShadertoyWSClient extends ShadertoyHttpClient<ShadertoyWSOptions>
     var shaderTaskPool = Pool(options.poolMaxAllocatedResources,
         timeout: Duration(seconds: options.poolTimeout));
 
-    return Future.wait(shaderIds.map((id) => pooledRetry(
-            shaderTaskPool,
-            () => findShaderById(id).then((FindShaderResponse sr) =>
-                FindShaderResponse(shader: sr.shader)))))
+    return Future.wait(shaderIds
+            .map((id) => pooledRetry(shaderTaskPool, () => findShaderById(id))))
         .then((l) => FindShadersResponse(shaders: l));
   }
 
   @override
   Future<FindShadersResponse> findShadersByIdSet(Set<String> shaderIds) {
-    return catchDioError<FindShadersResponse>(
-        _getShadersByIdSet(shaderIds),
-        (de) => FindShadersResponse(
-            error: toResponseError(de, context: CONTEXT_SHADER)));
+    return _getShadersByIdSet(shaderIds);
   }
 
   /// Finds shader ids
@@ -99,7 +91,7 @@ class ShadertoyWSClient extends ShadertoyHttpClient<ShadertoyWSOptions>
     }
 
     if (sort != null) {
-      sb.write('&sort=${EnumToString.parse(sort)}');
+      sb.write('&sort=${EnumToString.convertToString(sort)}');
     }
 
     if (from != null) {
@@ -155,4 +147,37 @@ class ShadertoyWSClient extends ShadertoyHttpClient<ShadertoyWSOptions>
         (de) => FindShaderIdsResponse(
             error: toResponseError(de, context: CONTEXT_SHADER)));
   }
+}
+
+/// Creates [ShadertoyWS] backed by the Shadertoy Rest API
+///
+/// * [apiKey]: The API key
+/// * [apiPath]: The base api path
+/// * [baseUrl]: The Shadertoy base url
+/// * [poolMaxAllocatedResources]: The maximum number of resources allocated for parallel calls
+/// * [poolTimeout]: The timeout before giving up on a call
+/// * [retryMaxAttempts]: The maximum number of attempts at a failed request
+/// * [shaderCount]: The number of shaders fetched in a paged call
+/// * [errorHandling]: The error handling mode
+/// * [client]: A pre-initialized [Dio] client
+ShadertoyWS newShadertoyWSClient(String apiKey,
+    {String apiPath,
+    String baseUrl,
+    int poolMaxAllocatedResources,
+    int poolTimeout,
+    int retryMaxAttempts,
+    int shaderCount,
+    ErrorMode errorHandling,
+    Dio client}) {
+  return ShadertoyWSClient(
+      ShadertoyWSOptions(
+          apiKey: apiKey,
+          apiPath: apiPath,
+          baseUrl: baseUrl,
+          poolMaxAllocatedResources: poolMaxAllocatedResources,
+          poolTimeout: poolTimeout,
+          retryMaxAttempts: retryMaxAttempts,
+          shaderCount: shaderCount,
+          errorHandling: errorHandling),
+      client: client);
 }

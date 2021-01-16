@@ -1,5 +1,6 @@
-import 'package:dotenv/dotenv.dart';
 import 'package:shadertoy_client/shadertoy_client.dart';
+
+import '../env.dart';
 
 final Set<String> shaders = {
   'Xds3zN',
@@ -56,11 +57,8 @@ final Set<String> shaders = {
 };
 
 void main(List<String> arguments) async {
-  // Reads environment variables from a .env file
-  load();
-
   // If the api key is not specified in the arguments, try the environment one
-  var apiKey = arguments.isEmpty ? env['apiKey'] : arguments[0];
+  var apiKey = arguments.isEmpty ? Env.apiKey : arguments[0];
 
   // if no api key is found abort
   if (apiKey == null || apiKey.isEmpty) {
@@ -68,7 +66,7 @@ void main(List<String> arguments) async {
     return;
   }
 
-  var ws = ShadertoyWSClient.build(apiKey);
+  var ws = newShadertoyWSClient(apiKey);
   var result = await ws.findShadersByIdSet(shaders);
   print('${result?.total} shader(s)');
 }

@@ -10,8 +10,48 @@ import 'package:html/parser.dart' show parse;
 import 'package:intl/intl.dart';
 import 'package:pool/pool.dart';
 import 'package:shadertoy_api/shadertoy_api.dart';
-import 'package:shadertoy_client/src/base_client.dart';
+import 'package:shadertoy_client/src/http_client.dart';
 import 'package:shadertoy_client/src/site/site_options.dart';
+
+/// The base Shadertoy Client API for WS and site access to Shadertoy
+abstract class ShadertoySite extends ShadertoyExtendedClient {
+  /// Performs a login in shadertoy website
+  ///
+  /// Upon success error is null
+  ///
+  /// In case of error the error field has the corresponding
+  /// [ResponseError] structure
+  Future<LoginResponse> login();
+
+  /// Performs a logout in shadertoy website
+  ///
+  /// Upon success error is null
+  ///
+  /// In case of error the error field has the corresponding
+  /// [ResponseError] structure
+  Future<LogoutResponse> logout();
+
+  /// Returns true when logged in, false otherwise
+  bool get loggedIn;
+
+  /// Returns a [DownloadFileResponse] for a shader with id [shaderId]
+  ///
+  /// On success [DownloadFileResponse.bytes] has the corresponding
+  /// byte list and a null error
+  ///
+  /// In case of error the error field has the corresponding
+  /// [ResponseError] structure and a null [DownloadFileResponse.bytes]
+  Future<DownloadFileResponse> downloadShaderPicture(String shaderId);
+
+  /// Returns a [DownloadFileResponse] for a path [inputPath]
+  ///
+  /// On success [DownloadFileResponse.bytes] has the corresponding
+  /// byte list and a null error
+  ///
+  /// In case of error the error field has the corresponding
+  /// [ResponseError] structure and a null [DownloadFileResponse.bytes]
+  Future<DownloadFileResponse> downloadMedia(String inputPath);
+}
 
 /// A Shadertoy site API client
 ///
@@ -24,12 +64,12 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// Parses the number of results out of the Shadertoy browse
   /// [page](https://www.shadertoy.com/browse)
   static final RegExp NumResultsTopRegExp =
-      RegExp(r'\s*Results\s\((\d*)\):\s*');
+      RegExp(r'\s*Results\s\((-?\d*)\):\s*');
 
   /// Parses the number of results out of the Shadertoy playlist page,
   /// for example this week playlist [page](https://www.shadertoy.com/playlist/week)
   static final RegExp NumResultsBottomRegExp =
-      RegExp(r'\((\d*)\s(results|shaders)\)');
+      RegExp(r'\((-?\d*)\s(results|shaders)\)');
 
   /// Parses the id's from the Shadertoy results, for example on
   /// a search for "elevated" this regular expression parses the
@@ -39,6 +79,17 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// Parses a Shadertoy id after sucessfully aplying the regex [IdArrayRegExp]
   static final RegExp ShaderIdRegExp = RegExp(r'\"(\w{6})\"');
 
+  /// Parses a publish status and shader count out of a playlist page, for
+  /// example it could parse on the weekly playlist [page](https://www.shadertoy.com/playlist/week)
+  /// "(public playlist, 391 shaders)" retriving publish status "public" and
+  /// "391" as the number of shaders
+  static final RegExp PrivacyRegExp =
+      RegExp(r'\((private|unlisted|public)\splaylist,\s(-?\d*)\sshaders\)');
+
+  /// Used to remove the '\' on the userpicture field of the comment
+  /// Ex: '\/img\/profile.jpg' becomes '/img/profile.jpg'
+  static final RegExp UserPictureRegExp = RegExp(r'\\');
+
   /// Creates a [ShadertoySiteClient]
   ///
   /// * [options]: The [ShadertoySiteOptions] used to configure this client
@@ -46,15 +97,9 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   ShadertoySiteClient(ShadertoySiteOptions options, {Dio client})
       : super(options, client: client);
 
-  /// Builds a [ShadertoySiteClient] out of the most common set of configurations
-  ///
-  /// * [user]: The Shadertoy site user
-  /// * [password]: The Shadertoy site password
-  ///
-  /// The [user] and [password] are optional and when not present
-  /// the site API is acessed anonymously like a normal browsing session
-  ShadertoySiteClient.build({String user, String password})
-      : super(ShadertoySiteOptions(user: user, password: password));
+  @override
+  bool get loggedIn =>
+      cookies.where((cookie) => options.cookieName == cookie.name).isNotEmpty;
 
   @override
   Future<LoginResponse> login() {
@@ -67,25 +112,61 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
         followRedirects: false,
         validateStatus: (int status) => status == 302);
 
+    if (options.supportsCookies) {
+      clearCookies();
+    }
     return catchDioError<LoginResponse>(
         client
             .post('/${ShadertoyContext.SignInPath}',
                 data: data, options: clientOptions)
-            .then((Response<dynamic> response) => LoginResponse()), (de) {
-      return LoginResponse(error: toResponseError(de));
+            .then((Response<dynamic> response) {
+          final headers = response.headers;
+          final locationHeaders = headers?.map[HttpHeaders.locationHeader];
+          if (locationHeaders?.length == 1) {
+            final location = locationHeaders.single;
+            if (location == '/') {
+              return LoginResponse();
+            } else if (location == '/${ShadertoyContext.SignInPath}?error=1') {
+              return LoginResponse(
+                  error: ResponseError.authentication(
+                      message: 'Login error',
+                      context: CONTEXT_USER,
+                      target: options.user));
+            }
+          }
+
+          return LoginResponse(
+              error: ResponseError.unknown(
+                  message: 'Invalid location header',
+                  context: CONTEXT_USER,
+                  target: options.user));
+        }), (de) {
+      return LoginResponse(
+          error: toResponseError(de)
+              .copyWith(context: CONTEXT_USER, target: options.user));
     });
   }
 
   @override
   Future<LogoutResponse> logout() {
-    return catchDioError<LogoutResponse>(
-        client
-            .get('/${ShadertoyContext.SignOutPath}')
-            .then((Response<dynamic> response) {
-          clearCookies();
-          return LogoutResponse();
-        }),
-        (de) => LogoutResponse(error: toResponseError(de)));
+    if (options.supportsCookies && loggedIn) {
+      var clientOptions = Options(
+          headers: {HttpHeaders.refererHeader: '${context.baseUrl}'},
+          followRedirects: false,
+          validateStatus: (int status) => status == 302);
+      return catchDioError<LogoutResponse>(
+          client
+              .get('/${ShadertoyContext.SignOutPath}', options: clientOptions)
+              .then((Response<dynamic> response) {
+            clearCookies();
+            return LogoutResponse();
+          }),
+          (de) => LogoutResponse(
+              error: toResponseError(de)
+                  .copyWith(context: CONTEXT_USER, target: options.user)));
+    } else {
+      return Future.value(LogoutResponse());
+    }
   }
 
   /// Finds shaders by ids
@@ -96,6 +177,10 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// This call posts a list of of shader ids to the shadertoy [path](https://www.shadertoy.com/shadertoy)
   /// obtaining a list of [Shader] objects as the response
   Future<FindShadersResponse> _getShadersByIdSet(Set<String> ids) {
+    if (ids.isEmpty) {
+      return Future.value(FindShadersResponse(shaders: []));
+    }
+
     var data = FormData.fromMap(
         {'s': jsonEncode(FindShadersRequest(ids)), 'nt': 1, 'nl': 1});
     var options = Options(
@@ -145,6 +230,25 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
             error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 
+  /// Validates [doc] and returns a [ResponseError] when invalid
+  ///
+  /// * [doc]: The document
+  /// * [context]: The context of execution when the error ocurred
+  /// * [target]: The target entity of the API that triggered this error
+  ///
+  /// Returns [ResponseError] for a invalid document or null otherwise.
+  ResponseError _validate(Document doc, {String context, String target}) {
+    var body = doc.querySelector('body');
+    if (body.children.isEmpty) {
+      return ResponseError.backendResponse(
+          message: 'Unexpected HTML response body: ${body.text}',
+          context: context,
+          target: target);
+    }
+
+    return null;
+  }
+
   /// Parses the number of returned shader's from the html
   /// returned in the Shadertoy browse [page](https://www.shadertoy.com/browse)
   /// the results [page](https://www.shadertoy.com/results) or the user page,
@@ -190,22 +294,29 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// Parses the list of shader id's returned
   ///
   /// * [doc]: The [Document] with the page DOM
+  /// * [maxShaders]: The maximum number of shaders
   ///
   /// It should be used to parse the html of
   /// browse, results, user and playlist pages
-  FindShaderIdsResponse _parseShaderIds(Document doc) {
-    int count;
+  FindShaderIdsResponse _parseShaderIds(Document doc, int maxShaders) {
+    var error = _validate(doc);
+    if (error != null) {
+      return FindShaderIdsResponse(error: error);
+    }
+
+    var count = _parseShaderPagerBottom(doc) ?? _parseShaderPagerTop(doc);
     var results = <String>[];
 
-    count = _parseShaderPagerBottom(doc) ?? _parseShaderPagerTop(doc);
     if (count == null) {
       return FindShaderIdsResponse(
           error: ResponseError.backendResponse(
               message: 'Unable to parse the number of results'));
-    } else if (count <= 0) {
+    } else if (count < 0) {
       return FindShaderIdsResponse(
           error: ResponseError.backendResponse(
               message: 'Obtained an invalid number of results: $count'));
+    } else if (count == 0) {
+      return FindShaderIdsResponse(count: 0, ids: const []);
     }
 
     var elements = doc.querySelectorAll('script');
@@ -218,17 +329,10 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
           Iterable<Match> shaderIdMatches =
               ShaderIdRegExp.allMatches(shaderListText);
 
-          if (shaderIdMatches.isNotEmpty) {
-            for (var i = 0; i < shaderIdMatches.length; i++) {
-              var shaderIdMatch = shaderIdMatches.elementAt(i);
+          for (var i = 0; i < min(shaderIdMatches.length, maxShaders); i++) {
+            var shaderIdMatch = shaderIdMatches.elementAt(i);
 
-              results.add(shaderIdMatch.group(1));
-            }
-          } else {
-            return FindShaderIdsResponse(
-                error: ResponseError.backendResponse(
-                    message:
-                        'Unable to obtain the list of shader ids while matching "${shaderListText}" with "${ShaderIdRegExp.pattern}" pattern'));
+            results.add(shaderIdMatch.group(1));
           }
         }
       }
@@ -253,12 +357,11 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// * [term]: Shaders that have [term] in the name or in description
   /// * [filters]: A set of tag filters
   /// * [sort]: The sort order of the shaders
-  /// * [page]: A page number. Each page returns a fixed set of shader ids as configured in [ShadertoySiteOptions.pageResultsShaderCount]
+  /// * [from]: A 0 based index for results returned
   ///
   /// Returns a [FindShaderIdsResponse] with a list of ids or a [ResponseError]
   Future<FindShaderIdsResponse> _getShaderIdsPage(
-      {String term, Set<String> filters, Sort sort, int page = 1}) {
-    var from = max((page - 1), 0) * options.pageResultsShaderCount;
+      {String term, Set<String> filters, Sort sort, int from}) {
     var num = options.pageResultsShaderCount;
 
     var queryParameters = [];
@@ -273,7 +376,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     }
 
     if (sort != null) {
-      queryParameters.add('sort=${EnumToString.parse(sort)}');
+      queryParameters.add('sort=${EnumToString.convertToString(sort)}');
     }
 
     if (from != null) {
@@ -290,8 +393,8 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
       sb.write(queryParameters[i]);
     }
 
-    return client.get(sb.toString()).then(
-        (Response<dynamic> response) => _parseShaderIds(parse(response.data)));
+    return client.get(sb.toString()).then((Response<dynamic> response) =>
+        _parseShaderIds(parse(response.data), num));
   }
 
   /// Finds shader ids
@@ -308,25 +411,30 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// (configured in [ShadertoySiteOptions.pageResultsShaderCount])
   Future<FindShaderIdsResponse> _getShaderIds(
       {String term, Set<String> filters, Sort sort, int from, int num}) {
-    return _getShaderIdsPage(term: term, filters: filters, sort: sort)
-        .then((FindShaderIdsResponse firstPage) {
-      if (firstPage.error != null) {
-        return firstPage;
+    final startFrom = from ?? 0;
+    return _getShaderIdsPage(
+            term: term, filters: filters, sort: sort, from: startFrom)
+        .then((FindShaderIdsResponse shaderPage) {
+      if (shaderPage.error != null) {
+        return shaderPage;
       }
 
-      var pages = (min(num ?? firstPage.total, firstPage.total) /
+      var pages = (min(num ?? shaderPage.total, shaderPage.total) /
               options.pageResultsShaderCount)
           .ceil();
       if (pages > 1) {
         var shaderTaskPool = Pool(options.poolMaxAllocatedResources,
             timeout: Duration(seconds: options.poolTimeout));
 
-        var tasks = [Future.value(firstPage)];
-        for (var page = 2; page <= pages; page++) {
+        var tasks = [Future.value(shaderPage)];
+        for (var page = 1; page < pages; page++) {
           tasks.add(pooledRetry(
               shaderTaskPool,
               () => _getShaderIdsPage(
-                  term: term, filters: filters, sort: sort, page: page)));
+                  term: term,
+                  filters: filters,
+                  sort: sort,
+                  from: startFrom + page * options.pageResultsShaderCount)));
         }
 
         return Future.wait(tasks).then((List<FindShaderIdsResponse> responses) {
@@ -349,7 +457,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
         });
       }
 
-      return firstPage;
+      return shaderPage;
     });
   }
 
@@ -365,10 +473,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                 num: num ?? options.shaderCount)
             .then((FindShaderIdsResponse response) {
           if (response.error != null) {
-            return FindShadersResponse(
-                error: ResponseError.backendResponse(
-                    message:
-                        'Unable to get the list of shader ids: ${response.error.message}'));
+            return FindShadersResponse(error: response.error);
           }
 
           return _getShadersByIdSet(response.ids.toSet());
@@ -399,18 +504,25 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
             error: toResponseError(de, context: CONTEXT_SHADER)));
   }
 
-  /// Builds the user url used in the call to Shadertoy user page.
+  /// Builds the user url used in the call to Shadertoy user page in order to obtain user data.
+  ///
+  /// * [userId]: The user Id
+  ///
+  /// The call is performed to a user page identified by it's id, for example user
+  /// iq [page](https://www.shadertoy.com/user/iq)
+  String _getUserUrl(String userId) => '/user/$userId';
+
+  /// Builds the user query url used in the call to Shadertoy user page in order to obtain both the user and the his shaders data.
   ///
   /// * [userId]: The user Id
   /// * [filters]: A set of tag filters
   /// * [sort]: The sort order of the shaders
-  /// * [page]: A page number. Each page returns a fixed set of shader ids as configured in [ShadertoySiteOptions.pageResultsShaderCount]
+  /// * [from]: A 0 based index for results returned
   ///
   /// The call is performed to a user page identified by it's id, for example user
   /// iq [page](https://www.shadertoy.com/user/iq)
-  String _getUserUrl(String userId,
-      {Set<String> filters, Sort sort, int page}) {
-    var from = max((page ?? 1 - 1), 0) * options.pageUserShaderCount;
+  String _getUserQueryUrl(String userId,
+      {Set<String> filters, Sort sort, int from}) {
     var num = options.pageUserShaderCount;
 
     var queryParameters = [];
@@ -422,7 +534,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     }
 
     if (sort != null) {
-      queryParameters.add('sort=${EnumToString.parse(sort)}');
+      queryParameters.add('sort=${EnumToString.convertToString(sort)}');
     }
 
     if (from != null) {
@@ -433,9 +545,13 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
       queryParameters.add('num=$num');
     }
 
-    var sb = StringBuffer('/user/$userId');
+    var sb = StringBuffer(_getUserUrl(userId));
     for (var i = 0; i < queryParameters.length; i++) {
-      sb.write(i == 0 ? '/' : '&');
+      // Strangely the only way to filter the calls is by ommiting ? in the
+      // query string. This is probably a bug on the shadertoy website
+      // If fixed line bellow should be used to distinguish between index 0
+      // thus '?' and the remaining indexes (which should use '&')
+      sb.write('&');
       sb.write(queryParameters[i]);
     }
 
@@ -447,15 +563,15 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// * [userId]: The user Id
   /// * [filters]: A set of tag filters
   /// * [sort]: The sort order of the shaders
-  /// * [page]: A page number. Each page returns a fixed set of shader ids as configured in [ShadertoySiteOptions.pageResultsShaderCount]
+  /// * [from]: A 0 based index for results returned
   ///
   /// Returns a [FindShaderIdsResponse] with a list of ids or a [ResponseError]
   Future<FindShaderIdsResponse> _getShaderIdsPageByUserId(String userId,
-      {Set<String> filters, Sort sort, int page}) {
+      {Set<String> filters, Sort sort, int from}) {
     return client
-        .get(_getUserUrl(userId, filters: filters, sort: sort, page: page))
+        .get(_getUserQueryUrl(userId, filters: filters, sort: sort, from: from))
         .then((Response<dynamic> response) =>
-            _parseShaderIds(parse(response.data)));
+            _parseShaderIds(parse(response.data), options.pageUserShaderCount));
   }
 
   /// Gets the shader ids of a user
@@ -472,18 +588,20 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// (configured in [ShadertoySiteOptions.pageUserShaderCount])
   Future<FindShaderIdsResponse> _getShaderIdsByUserId(String userId,
       {Set<String> filters, Sort sort, int from, int num}) {
-    return _getShaderIdsPageByUserId(userId, filters: filters, sort: sort)
-        .then((FindShaderIdsResponse userResponse) {
-      if (userResponse.error != null) {
-        userResponse.error..target = userId;
-        return userResponse;
+    final startFrom = from ?? 0;
+    return _getShaderIdsPageByUserId(userId,
+            filters: filters, sort: sort, from: startFrom)
+        .then((FindShaderIdsResponse userShaderPage) {
+      if (userShaderPage.error != null) {
+        userShaderPage.error..target = userId;
+        return userShaderPage;
       }
 
-      var firstPageIds = userResponse.ids;
+      var firstPageIds = userShaderPage.ids;
       var firstPageResponse =
           FindShaderIdsResponse(count: firstPageIds.length, ids: firstPageIds);
 
-      var pages = (min(num ?? userResponse.total, userResponse.total) /
+      var pages = (min(num ?? userShaderPage.total, userShaderPage.total) /
               options.pageUserShaderCount)
           .ceil();
       if (pages > 1) {
@@ -491,16 +609,18 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
             timeout: Duration(seconds: options.poolTimeout));
 
         var tasks = [Future.value(firstPageResponse)];
-        for (var page = 2; page <= pages; page++) {
+        for (var page = 1; page < pages; page++) {
           tasks.add(pooledRetry(
               shaderTaskPool,
               () => _getShaderIdsPageByUserId(userId,
-                  filters: filters, sort: sort, page: page)));
+                  filters: filters,
+                  sort: sort,
+                  from: startFrom + page * options.pageUserShaderCount)));
         }
 
         return Future.wait(tasks)
             .then((List<FindShaderIdsResponse> findShaderIdsResponses) {
-          var results = <String>[];
+          var shaders = <String>[];
 
           for (var i = 0; i < findShaderIdsResponses.length; i++) {
             var findShaderIdsResponse = findShaderIdsResponses[i];
@@ -513,14 +633,15 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                       target: userId));
             }
 
-            results.addAll(findShaderIdsResponse.ids);
+            shaders.addAll(findShaderIdsResponse.ids);
           }
 
-          return FindShaderIdsResponse(count: userResponse.total, ids: results);
+          return FindShaderIdsResponse(
+              count: userShaderPage.total, ids: shaders);
         });
       }
 
-      return userResponse;
+      return userShaderPage;
     });
   }
 
@@ -546,10 +667,15 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   ///
   /// Return a [FindUserResponse] with a [User] or a [ResponseError]
   FindUserResponse _parseUser(String userId, Document doc) {
+    var error = _validate(doc, context: CONTEXT_USER, target: userId);
+    if (error != null) {
+      return FindUserResponse(error: error);
+    }
+
     String picture;
-    DateTime memberSince;
-    int shaders;
-    int comments;
+    DateTime joined;
+    int following;
+    int followers;
     var aboutBuffer = StringBuffer();
 
     var elements = doc.querySelectorAll('#content>#divUser>table>tbody>tr>td');
@@ -557,7 +683,9 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
       return FindUserResponse(
           error: ResponseError.backendResponse(
               message:
-                  'Obtained an invalid number of user sections: ${elements.length}'));
+                  'Obtained an invalid number of user sections: ${elements.length}',
+              context: CONTEXT_USER,
+              target: userId));
     }
 
     var pictureSection = elements[0];
@@ -567,16 +695,16 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     for (var i = 0; i < nodes.length; i++) {
       var text = nodes[i].text;
 
-      if ('Member since'.compareTo(text) == 0 && i < nodes.length - 1) {
-        memberSince = _userDate(nodes[i + 1]);
+      if ('Joined'.compareTo(text) == 0 && i < nodes.length - 1) {
+        joined = _userDate(nodes[i + 1]);
       }
 
-      if ('Shaders'.compareTo(text) == 0 && i < nodes.length - 1) {
-        shaders = _userInt(nodes[i + 1]);
+      if ('Following'.compareTo(text) == 0 && i < nodes.length - 1) {
+        following = _userInt(nodes[i + 1]);
       }
 
-      if ('Comments'.compareTo(text) == 0 && i < nodes.length - 1) {
-        comments = _userInt(nodes[i + 1]);
+      if ('Followers'.compareTo(text) == 0 && i < nodes.length - 1) {
+        followers = _userInt(nodes[i + 1]);
       }
     }
     var aboutSection = elements[2];
@@ -647,9 +775,9 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
         user: User(
             id: userId,
             picture: picture,
-            memberSince: memberSince,
-            shaders: shaders,
-            comments: comments,
+            memberSince: joined,
+            following: following,
+            followers: followers,
             about: aboutBuffer.toString()));
   }
 
@@ -670,17 +798,15 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                 filters: filters,
                 sort: sort,
                 from: from,
-                num: num ?? options.shaderCount)
+                num: num ?? options.userShaderCount)
             .then((FindShaderIdsResponse response) {
           if (response.error != null) {
             return FindShadersResponse(
-                error: ResponseError.backendResponse(
-                    message:
-                        'Unable to get the list of shader ids: ${response.error.message}',
-                    target: userId));
+                error: response.error
+                    .copyWith(context: CONTEXT_USER, target: userId));
           }
 
-          return findShadersByIdSet(response.ids.toSet());
+          return _getShadersByIdSet(response.ids.toSet());
         }),
         (de) => FindShadersResponse(
             error: toResponseError(de, context: CONTEXT_USER, target: userId)));
@@ -691,8 +817,21 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
       {Set<String> filters, Sort sort, int from, int num}) {
     return catchDioError<FindShaderIdsResponse>(
         _getShaderIdsByUserId(userId,
-                from: from, num: num ?? options.shaderCount)
+                filters: filters,
+                sort: sort,
+                from: from,
+                num: num ?? options.userShaderCount)
             .then((userResponse) => FindShaderIdsResponse(
+                count: userResponse.ids.length, ids: userResponse.ids)),
+        (de) => FindShaderIdsResponse(
+            error: toResponseError(de, context: CONTEXT_USER, target: userId)));
+  }
+
+  @override
+  Future<FindShaderIdsResponse> findAllShaderIdsByUserId(String userId) {
+    return catchDioError<FindShaderIdsResponse>(
+        _getShaderIdsByUserId(userId).then((userResponse) =>
+            FindShaderIdsResponse(
                 count: userResponse.ids.length, ids: userResponse.ids)),
         (de) => FindShaderIdsResponse(
             error: toResponseError(de, context: CONTEXT_USER, target: userId)));
@@ -715,34 +854,63 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                     response, (data) => CommentsResponse.from(data),
                     context: CONTEXT_SHADER, target: shaderId))
             .then((c) {
-          var userIds = c?.userIds;
-          var dates = c?.dates;
-          var texts = c?.texts;
+          var userIdList = c?.userIds;
+          var userPictureList = c?.userPictures;
+          var dateList = c?.dates;
+          var textList = c?.texts;
+          var idList = c?.ids;
+          var hiddenList = c?.hidden;
 
-          var comments = List<Comment>(max(
-              max(texts?.length ?? 0, dates?.length ?? 0),
-              userIds?.length ?? 0));
+          var comments = List<Comment>([
+            userIdList?.length ?? 0,
+            userPictureList?.length ?? 0,
+            dateList?.length ?? 0,
+            textList?.length ?? 0,
+            idList?.length ?? 0,
+            hiddenList?.length ?? 0
+          ].reduce(min));
 
           for (var i = 0; i < comments.length; i++) {
             String userId;
+            String userPicture;
             DateTime date;
             String text;
+            String id;
+            bool hidden;
 
-            if (userIds != null && userIds.length > i) {
-              userId = userIds[i];
+            if (userIdList != null && userIdList.length > i) {
+              userId = userIdList[i];
             }
 
-            if (dates != null && dates.length > i) {
+            if (userPictureList != null && userPictureList.length > i) {
+              userPicture =
+                  userPictureList[i].replaceAll(UserPictureRegExp, '');
+            }
+
+            if (dateList != null && dateList.length > i) {
               date = DateTime.fromMillisecondsSinceEpoch(
-                  int.parse(dates[i]) * 1000);
+                  int.parse(dateList[i]) * 1000);
             }
 
-            if (texts != null && texts.length > i) {
-              text = texts[i];
+            if (textList != null && textList.length > i) {
+              text = textList[i];
+            }
+
+            if (idList != null && idList.length > i) {
+              id = idList[i];
+            }
+
+            if (hiddenList != null && hiddenList.length > i) {
+              hidden = !(hiddenList[i] == 0);
             }
 
             comments[i] = Comment(
-                shaderId: shaderId, userId: userId, date: date, text: text);
+                id: id,
+                userId: userId,
+                picture: userPicture,
+                date: date,
+                text: text,
+                hidden: hidden);
           }
 
           return FindCommentsResponse(
@@ -753,15 +921,23 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                 context: CONTEXT_COMMENT, target: shaderId)));
   }
 
+  /// Builds the playlist url used in the call to Shadertoy playlist page in
+  /// order to obtain playlist data.
+  ///
+  /// * [playlistId]: The playlist id
+  ///
+  /// The call is performed to a playlist page identified by it's id, for example
+  /// playlist week [page](https://www.shadertoy.com/playlist/week)
+  String _getPlaylistUrl(String playlistId) => '/playlist/$playlistId';
+
   /// Builds the playlist url used in the call to Shadertoy playlist page.
   ///
   /// * [playlistId]: The playlist id
-  /// * [page]: A page number. Each page returns a fixed set of playlist shader ids as configured in [ShadertoySiteOptions.pagePlaylistShaderCount]
+  /// * [from]: A 0 based index for results returned
   ///
   /// The call is performed to a playlist page identified by it's id, for example week
   /// [playlist](https://www.shadertoy.com/playlist/week)
-  String _getPlaylistUrl(String playlistId, int page) {
-    var from = max((page - 1), 0) * options.pagePlaylistShaderCount;
+  String _getPlaylistQueryUrl(String playlistId, {int from}) {
     var num = options.pagePlaylistShaderCount;
 
     var queryParameters = [];
@@ -773,7 +949,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
       queryParameters.add('num=$num');
     }
 
-    var sb = StringBuffer('/playlist/$playlistId');
+    var sb = StringBuffer(_getPlaylistUrl(playlistId));
     for (var i = 0; i < queryParameters.length; i++) {
       sb.write(i == 0 ? '?' : '&');
       sb.write(queryParameters[i]);
@@ -790,53 +966,104 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// It should be used to parse the html of
   /// the playlist pages
   FindPlaylistResponse _parsePlaylist(String playlistId, Document doc) {
-    String name;
+    var error = _validate(doc, context: CONTEXT_PLAYLIST, target: playlistId);
+    if (error != null) {
+      return FindPlaylistResponse(error: error);
+    }
 
-    var element = doc.querySelector('#content>#info>span>span');
+    String name;
+    String userId;
+    String description;
+    PlaylistPrivacy privacy;
+
+    var element = doc.querySelector('#content>#info>span');
+    if (element != null) {
+      description = element.nodes?.last?.text?.trim();
+    } else {
+      return FindPlaylistResponse(
+          error: ResponseError.backendResponse(
+              message:
+                  'Unable to get the playlist description from the document',
+              context: CONTEXT_PLAYLIST,
+              target: playlistId));
+    }
+
+    element = doc.querySelector('#content>#info>span>span');
     if (element != null) {
       name = element.text;
     } else {
       return FindPlaylistResponse(
           error: ResponseError.backendResponse(
-              message: 'Unable to get the playlist name from the document'));
+              message: 'Unable to get the playlist name from the document',
+              context: CONTEXT_PLAYLIST,
+              target: playlistId));
     }
 
-    var shaderIdsResponse = _parseShaderIds(doc);
-    if (shaderIdsResponse.error != null) {
-      return FindPlaylistResponse(error: shaderIdsResponse.error);
+    element = doc.querySelector('#content>#info>span>a');
+    if (element != null) {
+      userId = element?.text?.trim();
+    } else {
+      return FindPlaylistResponse(
+          error: ResponseError.backendResponse(
+              message: 'Unable to get the playlist user id from the document',
+              context: CONTEXT_PLAYLIST,
+              target: playlistId));
+    }
+
+    element = doc.querySelector('#content>#info>span>#privacy');
+    if (element != null) {
+      Match privacyMatch = PrivacyRegExp.firstMatch(element?.text?.trim());
+      if (privacyMatch != null) {
+        privacy = EnumToString.fromString(
+            PlaylistPrivacy.values, privacyMatch.group(1));
+      } else {
+        return FindPlaylistResponse(
+            error: ResponseError.backendResponse(
+                message:
+                    'Unable to parse playlist publish status and shader count from the document',
+                context: CONTEXT_PLAYLIST,
+                target: playlistId));
+      }
+    } else {
+      return FindPlaylistResponse(
+          error: ResponseError.backendResponse(
+              message:
+                  'Unable to get the playlist publish status and shader count from the document',
+              context: CONTEXT_PLAYLIST,
+              target: playlistId));
     }
 
     return FindPlaylistResponse(
         playlist: Playlist(
             id: playlistId,
+            userId: userId,
             name: name,
-            count: shaderIdsResponse.total,
-            shaders: shaderIdsResponse.ids));
+            description: description,
+            privacy: privacy));
   }
 
   /// Get's a playlist with it's associated shaders
   ///
   /// * [playlistId]: The playlist Id
-  /// * [page]: A page number. Each page returns a fixed set of playlist shader ids as configured in [ShadertoySiteOptions.pagePlaylistShaderCount]
   ///
   /// Returns a [FindPlaylistResponse] with a list of shader id's or a [ResponseError]
-  Future<FindPlaylistResponse> _getPlaylistPageByPlayListId(String playlistId,
-      {int page = 1}) {
-    return client.get(_getPlaylistUrl(playlistId, page)).then(
+  Future<FindPlaylistResponse> _getPlaylistById(String playlistId) {
+    return client.get(_getPlaylistUrl(playlistId)).then(
         (Response<dynamic> response) =>
             _parsePlaylist(playlistId, parse(response.data)));
   }
 
-  /// Get's the sahders id's of a playlist
+  /// Get's the shader id's of a playlist
   ///
   /// * [playlistId]: The playlist Id
-  /// * [page]: A page number. Each page returns a fixed set of shader ids as configured in [ShadertoySiteOptions.pagePlaylistShaderCount]
+  /// * [from]: A 0 based index for results returned
   ///
   /// Returns a [FindShaderIdsResponse] with a list of shader id's or a [ResponseError]
   Future<FindShaderIdsResponse> _getShaderIdsPageByPlayListId(String playlistId,
-      {int page = 1}) {
-    return client.get(_getPlaylistUrl(playlistId, page)).then(
-        (Response<dynamic> response) => _parseShaderIds(parse(response.data)));
+      {int from}) {
+    return client.get(_getPlaylistQueryUrl(playlistId, from: from)).then(
+        (Response<dynamic> response) => _parseShaderIds(
+            parse(response.data), options.pagePlaylistShaderCount));
   }
 
   /// Gets the shader ids of a playlist
@@ -845,35 +1072,38 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   /// * [from]: A 0 based index for results returned
   /// * [num]: The total number of results
   ///
-  /// Returns a [FindPlaylistResponse] with a list of shader id's or a [ResponseError]
+  /// Returns a [FindShaderIdsResponse] with a list of shader id's or a [ResponseError]
   /// According with [from] and [num] parameters the number of calls to the Shadertoy
   /// site API s calculated. Note that the site returns a fixed number of shaders
   /// (configured in [ShadertoySiteOptions.pagePlaylistShaderCount])
-  Future<FindPlaylistResponse> _getPlaylistByPlaylistId(String playlistId,
+  Future<FindShaderIdsResponse> _getShaderIdsByPlaylistId(String playlistId,
       {int from, int num}) {
-    return _getPlaylistPageByPlayListId(playlistId)
-        .then((FindPlaylistResponse playlistResponse) {
-      if (playlistResponse.error != null) {
-        playlistResponse.error..target = playlistId;
-        return playlistResponse;
+    final startFrom = from ?? 0;
+    return _getShaderIdsPageByPlayListId(playlistId, from: startFrom)
+        .then((FindShaderIdsResponse playlistShaderPage) {
+      if (playlistShaderPage.error != null) {
+        playlistShaderPage.error..target = playlistId;
+        return playlistShaderPage;
       }
 
-      var playlist = playlistResponse.playlist;
-      var firstPageIds = playlist.shaders;
+      var firstPageIds = playlistShaderPage.ids;
       var firstPageResponse =
           FindShaderIdsResponse(count: firstPageIds.length, ids: firstPageIds);
 
-      var pages = (min(num ?? playlist.count, playlist.count) /
-              options.pagePlaylistShaderCount)
-          .ceil();
+      var pages =
+          (min(num ?? playlistShaderPage.total, playlistShaderPage.total) /
+                  options.pagePlaylistShaderCount)
+              .ceil();
       if (pages > 1) {
         var shaderTaskPool = Pool(options.poolMaxAllocatedResources,
             timeout: Duration(seconds: options.poolTimeout));
 
         var tasks = [Future.value(firstPageResponse)];
-        for (var page = 2; page <= pages; page++) {
-          tasks.add(pooledRetry(shaderTaskPool,
-              () => _getShaderIdsPageByPlayListId(playlistId, page: page)));
+        for (var page = 1; page < pages; page++) {
+          tasks.add(pooledRetry(
+              shaderTaskPool,
+              () => _getShaderIdsPageByPlayListId(playlistId,
+                  from: startFrom + page * options.pagePlaylistShaderCount)));
         }
 
         return Future.wait(tasks)
@@ -884,33 +1114,30 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
             var findShaderIdsResponse = findShaderIdsResponses[i];
 
             if (findShaderIdsResponse.error != null) {
-              return FindPlaylistResponse(
+              return FindShaderIdsResponse(
                   error: ResponseError.backendResponse(
                       message:
                           'Page ${i + 1} of $pages page(s) was not successfully fetched: ${findShaderIdsResponse.error.message}',
+                      context: CONTEXT_PLAYLIST,
                       target: playlistId));
             }
 
             shaders.addAll(findShaderIdsResponse.ids);
           }
 
-          return FindPlaylistResponse(
-              playlist: Playlist(
-                  id: playlist.id,
-                  name: playlist.name,
-                  count: playlist.count,
-                  shaders: shaders));
+          return FindShaderIdsResponse(
+              count: playlistShaderPage.total, ids: shaders);
         });
       }
 
-      return playlistResponse;
+      return playlistShaderPage;
     });
   }
 
   @override
   Future<FindPlaylistResponse> findPlaylistById(String playlistId) {
     return catchDioError<FindPlaylistResponse>(
-        _getPlaylistByPlaylistId(playlistId),
+        _getPlaylistById(playlistId),
         (de) => FindPlaylistResponse(
             error: toResponseError(de,
                 context: CONTEXT_PLAYLIST, target: playlistId)));
@@ -918,19 +1145,18 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
   @override
   Future<FindShadersResponse> findShadersByPlaylistId(String playlistId,
-      {int from, int num}) {
+      {int from, int num = 0}) {
     return catchDioError<FindShadersResponse>(
-        _getPlaylistByPlaylistId(playlistId,
-                from: from, num: num ?? options.shaderCount)
-            .then((FindPlaylistResponse response) {
+        _getShaderIdsByPlaylistId(playlistId,
+                from: from, num: num ?? options.playlistShaderCount)
+            .then((FindShaderIdsResponse response) {
           if (response.error != null) {
             return FindShadersResponse(
-                error: ResponseError.backendResponse(
-                    message:
-                        'Unable to get the list of shader ids: ${response.error.message}'));
+                error: response.error
+                    .copyWith(context: CONTEXT_PLAYLIST, target: playlistId));
           }
 
-          return findShadersByIdSet(response.playlist.shaders.toSet());
+          return _getShadersByIdSet(response.ids.toSet());
         }),
         (de) => FindShadersResponse(
             error: toResponseError(de,
@@ -941,11 +1167,22 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
   Future<FindShaderIdsResponse> findShaderIdsByPlaylistId(String playlistId,
       {int from, int num}) {
     return catchDioError<FindShaderIdsResponse>(
-        _getPlaylistByPlaylistId(playlistId,
-                from: from, num: num ?? options.shaderCount)
+        _getShaderIdsByPlaylistId(playlistId,
+                from: from, num: num ?? options.playlistShaderCount)
             .then((playlistResponse) => FindShaderIdsResponse(
-                count: playlistResponse.playlist.shaders.length,
-                ids: playlistResponse.playlist.shaders)),
+                count: playlistResponse.ids.length, ids: playlistResponse.ids)),
+        (de) => FindShaderIdsResponse(
+            error: toResponseError(de,
+                context: CONTEXT_PLAYLIST, target: playlistId)));
+  }
+
+  @override
+  Future<FindShaderIdsResponse> findAllShaderIdsByPlaylistId(
+      String playlistId) {
+    return catchDioError<FindShaderIdsResponse>(
+        _getShaderIdsByPlaylistId(playlistId).then((playlistResponse) =>
+            FindShaderIdsResponse(
+                count: playlistResponse.ids.length, ids: playlistResponse.ids)),
         (de) => FindShaderIdsResponse(
             error: toResponseError(de,
                 context: CONTEXT_PLAYLIST, target: playlistId)));
@@ -971,6 +1208,58 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
                 options: Options(responseType: ResponseType.bytes))
             .then((response) => DownloadFileResponse(bytes: response.data)),
         (de) => DownloadFileResponse(
-            error: toResponseError(de, context: CONTEXT_SHADER)));
+            error: toResponseError(de, target: inputPath)));
   }
+}
+
+/// Creates [ShadertoySite] backed by a [ShadertoySiteClient]
+///
+/// * [user]: The Shadertoy user
+/// * [password]: The Shadertoy password
+/// * [cookieName]: The Shadertoy cookie name
+/// * [userShaderCount]: The number of shaders requested for a user paged call
+/// * [playlistShaderCount]: The number of shaders requested for a playlist paged call
+/// * [pageResultsShaderCount]: The number of shaders presented in the Shadertoy results page
+/// * [pageUserShaderCount]: The number of shaders presented in the Shadertoy user page
+/// * [pagePlaylistShaderCount]: The number of shaders presented in the Shadertoy playlist page
+/// * [baseUrl]: The Shadertoy base url
+/// * [poolMaxAllocatedResources]: The maximum number of resources allocated for parallel calls
+/// * [poolTimeout]: The timeout before giving up on a call
+/// * [retryMaxAttempts]: The maximum number of attempts at a failed request
+/// * [shaderCount]: The number of shaders fetched in a paged call
+/// * [errorHandling]: The error handling mode
+/// * [client]: A pre-initialized [Dio] client
+ShadertoySite newShadertoySiteClient(
+    {String user,
+    String password,
+    String cookieName,
+    int userShaderCount,
+    int playlistShaderCount,
+    int pageResultsShaderCount,
+    int pageUserShaderCount,
+    int pagePlaylistShaderCount,
+    String baseUrl,
+    int poolMaxAllocatedResources,
+    int poolTimeout,
+    int retryMaxAttempts,
+    int shaderCount,
+    ErrorMode errorHandling,
+    Dio client}) {
+  return ShadertoySiteClient(
+      ShadertoySiteOptions(
+          user: user,
+          password: password,
+          cookieName: cookieName,
+          userShaderCount: userShaderCount,
+          playlistShaderCount: playlistShaderCount,
+          pageResultsShaderCount: pageResultsShaderCount,
+          pageUserShaderCount: pageUserShaderCount,
+          pagePlaylistShaderCount: pagePlaylistShaderCount,
+          baseUrl: baseUrl,
+          poolMaxAlocatedResources: poolMaxAllocatedResources,
+          poolTimeout: poolTimeout,
+          retryMaxAttempts: retryMaxAttempts,
+          shaderCount: shaderCount,
+          errorHandling: errorHandling),
+      client: client);
 }

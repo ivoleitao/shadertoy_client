@@ -8,6 +8,9 @@ build/
 # If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
 
+# Generated Dart files  
+**/*.g.dart
+
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
 doc/api/
@@ -17,7 +20,7 @@ coverage/
 test/.test_coverage.dart
 
 # File with environment configurations
-.env*
+**/.env
 
 # Avoid committing generated Javascript files:
 *.dart.js

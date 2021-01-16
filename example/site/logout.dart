@@ -1,10 +1,29 @@
 import 'package:shadertoy_client/shadertoy_client.dart';
 
-void main(List<String> arguments) async {
-  var site =
-      ShadertoySiteClient.build(user: 'shaderflix', password: 'IcA200Pur');
+import '../env.dart';
 
-  print('Anonymous');
+void main(List<String> arguments) async {
+  // If the user is not specified in the arguments, try the environment one
+  var user = arguments.isEmpty ? Env.user : arguments[0];
+
+  // if no user is found abort
+  if (user == null || user.isEmpty) {
+    print('Invalid user');
+    return;
+  }
+
+  // If the password is not specified in the arguments, try the environment one
+  var password = arguments.isEmpty ? Env.password : arguments[0];
+
+  // if no password is found abort
+  if (password == null || password.isEmpty) {
+    print('Invalid password');
+    return;
+  }
+
+  final site = newShadertoySiteClient(user: user, password: password);
+
+  print('Logged In: ${site.loggedIn}');
   var sr = await site.findShaderById('3lsSzf');
   print('${sr?.shader?.info?.id}');
   print('\tName: ${sr?.shader?.info?.name}');
@@ -12,8 +31,7 @@ void main(List<String> arguments) async {
 
   await site.login();
 
-  print('Logged In');
-  site.cookies.forEach((c) => print('${c.name}=${c.value}'));
+  print('Logged In: ${site.loggedIn}');
   sr = await site.findShaderById('3lsSzf');
   print('${sr?.shader?.info?.id}');
   print('\tName: ${sr?.shader?.info?.name}');
@@ -21,8 +39,7 @@ void main(List<String> arguments) async {
 
   await site.logout();
 
-  print('Logged Out');
-  site.cookies.forEach((c) => print('${c.name}=${c.value}'));
+  print('Logged Out: ${!site.loggedIn}');
   sr = await site.findShaderById('3lsSzf');
   print('${sr?.shader?.info?.id}');
   print('\tName: ${sr?.shader?.info?.name}');

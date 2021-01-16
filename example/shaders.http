@@ -1,0 +1,1 @@
+GET {{baseUrl}}/{{apiPath}}/{{shadersPath}}?key={{$dotenv API_KEY}}

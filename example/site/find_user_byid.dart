@@ -1,15 +1,18 @@
-import 'package:shadertoy_api/shadertoy_api.dart';
+import 'dart:convert';
+
 import 'package:shadertoy_client/shadertoy_client.dart';
 
 void main(List<String> arguments) async {
-  ShadertoySite site = ShadertoySiteClient.build();
+  final site = newShadertoySiteClient();
 
-  var response = await site.findUserById('iq');
-  print('${response?.user?.id}');
-  print('Name: ${response?.user?.picture}');
-  print('Member Since: ${response?.user?.memberSince}');
-  print('Shaders: ${response?.user?.shaders}');
-  print('Comments: ${response?.user?.comments}');
+  final response = await site.findUserById('shaderflix');
+  print('Name: ${response?.user?.id}');
+  print('Picture: ${response?.user?.picture}');
+  print('Joined: ${response?.user?.memberSince}');
+  print('Following: ${response?.user?.following}');
+  print('Followers: ${response?.user?.followers}');
   print('About:');
   print('${response?.user?.about}');
+
+  print(jsonEncode(response.user.toJson()));
 }

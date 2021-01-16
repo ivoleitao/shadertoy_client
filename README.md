@@ -13,30 +13,35 @@ This package implements the client APIs defined in the [shadertoy_api](https://p
 
 ## Capabilities
 
-This package provides a number of operations through two types of clients:
+The following clients are provided:
 
-**REST APIs**
+**WS Client**
 
 * `Find shader` by id
-* `Find shaders` from a list of id's
-* `Query shaders by term`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated.
+* `Find shaders` by a list of id's
+* `Query shaders` by term, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated through the `from` and `num` parameters
 * `Find all shader ids`
-* `Find shaders ids by term`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated.
+* `Query shader ids` by term, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated through the `from` and `num` parameters
 
-**Site APIs**
+**Site Client**
 
-All the REST API features plus the following:
+All the WS client features plus the following:
 * `Login`
 * `Logout`
-* `Find user` by id
-* `Find shaders by user id`
-* `Query shaders by user id`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated as well.
+* `Find user by id`
+* `Query shaders by user id`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated through the `from` and `num` parameters
+* `Query shaders by user id`, tags and sort them by *name*, *likes*, *views*, *newness* and by *hotness* (proportional to popularity and inversely proportional to lifetime). All the query results are paginated through the `from` and `num` parameters
+* `Find all shader ids by user id`
 * `Find comments` by shader id
 * `Find playlist` by id.
-* `Query shaders by playlist id`. All the query results are paginated.
-* `Query shader ids by playlist id`. All the query results are paginated. 
+* `Query shaders by playlist id`. All the query results are paginated through the `from` and `num` parameters
+* `Query shader ids by playlist id`. All the query results are paginated through the `from` and `num` parameters 
 * `Download preview`, i.e. the the shader thumbnails
 * `Download media`, any other media provided by the Shadertoy website
+
+**Hybrid Client**
+
+All the WS and site client features but optionally constraining the requests to shaders with public+api privacy settings.
 
 ## Getting Started
 
@@ -44,19 +49,13 @@ Add this to your `pubspec.yaml` (or create it):
 
 ```dart
 dependencies:
-    shadertoy_client: ^1.0.0-dev.9
+    shadertoy_client: ^1.0.0
 ```
 
 Run the following command to install dependencies:
 
 ```dart
-pub install
-```
-
-Optionally use the following command to run the tests:
-
-```dart
-pub run test
+pub get
 ```
 
 Finally, to start developing import the library:
@@ -76,12 +75,12 @@ You can use this library with one of the following classes:
 
 > Note: replace `apiKey` with the API key obtained in your user [apps](https://www.shadertoy.com/myapps) page
 
-#### Query a shader by id
+#### Find shader by id
 
 ```dart
-    var apiKey = '<apiKey>';
-    var client = ShadertoyWSClient.build(apiKey);
-    var fsr = await client.findShaderById('3lsSzf');
+    final apiKey = '<apiKey>';
+    final client = newShadertoyWSClient(apiKey);
+    final fsr = await client.findShaderById('3lsSzf');
     if (fsr.ok) {
         print('${fsr?.shader?.info?.id}');
         print('\tName: ${fsr?.shader?.info?.name}');
@@ -122,9 +121,9 @@ Output:
 #### Query shaders by `term`: 
 
 ```dart
-    var apiKey = '<apiKey>';
-    var client = ShadertoyWSClient.build(apiKey);
-    var fsr = await ws.findShaders(term: 'elevated');
+    final apiKey = '<apiKey>';
+    final client = newShadertoyWSClient(apiKey);
+    final fsr = await ws.findShaders(term: 'elevated');
     if (fsr.ok) {
         print('${fsr.total} shader id(s) found');
         response?.shaders?.forEach((sh) {
@@ -153,14 +152,12 @@ XltSWH
 
 ### ShadertoySiteClient
 
-> Note: replace `user` and `password`, with the user credentials, where applicable
-
 #### Find a shader by id using a anonymous site client 
 
 ```dart
-  var client = ShadertoySiteClient.build();
+  final site = newShadertoySiteClient();
 
-  var fsr = await ws.findShaderById('3lsSzf');
+  final fsr = await site.findShaderById('3lsSzf');
   if (fsr.ok) {
     print('${fsr?.shader?.info?.id}');
     print('\tName: ${fsr?.shader?.info?.name}');
@@ -201,13 +198,14 @@ Output:
 
 #### Anonymous usage of the site client versus logged in usage 
 
+> Note: replace `user` and `password`, with the user credentials, where applicable
+
 ```dart
 
-  var client =
-      ShadertoySiteClient.build(user: '<user>', password: '<password>');
+  final site = newShadertoySiteClient(user: '<user>', password: '<password>');
 
   print('Anonymous');
-  var fsr = await client.findShaderById('3lsSzf');
+  final fsr = await site.findShaderById('3lsSzf');
   print('${fsr?.shader?.info?.id}');
   print('\tName: ${fsr?.shader?.info?.name}');
   print('\tLiked: ${fsr?.shader?.info?.hasLiked}');
@@ -239,9 +237,9 @@ sdtd=ed42bec0ab3f881fa7f180f1346dd6f9
 #### Find shader comments
 
 ```dart
-  var client = ShadertoySiteClient.build();
+  final site = newShadertoySiteClient();
 
-  var fcr = await client.findCommentsByShaderId('MdX3Rr');
+  final fcr = await site.findCommentsByShaderId('MdX3Rr');
   if (fcr.ok) {
     print('${fcr?.total} comment(s)');
   } else {
@@ -258,9 +256,9 @@ Output:
 #### Find a user by id
 
 ```dart
-  var client = ShadertoySiteClient.build();
+  final site = newShadertoySiteClient();
 
-  var fur = await client.findUserById('iq');
+  final fur = await site.findUserById('iq');
   if (fur.ok) {
     print('${fur?.user?.id}');
     print('Name: ${fur?.user?.picture}');
@@ -295,9 +293,9 @@ About:
 #### Find playlist by id
 
 ```dart
-  var client = ShadertoySiteClient.build();
+  final site = newShadertoySiteClient();
 
-  var fpr = await client.findPlaylistById('week');
+  final fpr = await site.findPlaylistById('week');
   if (fcr.ok) {
     print('${fpr?.playlist?.name}');
     print('${fpr?.playlist?.count} shader id(s)');
@@ -328,12 +326,12 @@ WtfGWn
 #### Find shader by `term` and obtain the shader comments
 
 ```dart
-  var client = ShadertoyHybridClient.build(apiKey: '<apiKey>');
-  var fsr = await client.findShaders(term: 'Happy Jumping');
+  final hybrid = newShadertoyHybridClient(apiKey: '<apiKey>');
+  final fsr = await hybrid.findShaders(term: 'Happy Jumping');
 
   if (fsr.ok) {
     if (fsr.shaders.isNotEmpty) {
-      var fsc = await client.findCommentsByShaderId(fsr?.shaders?.first?.shader?.info?.id);
+      var fsc = await hybrid.findCommentsByShaderId(fsr?.shaders?.first?.shader?.info?.id);
       if (fsc.ok) {
         print('Found ${fsc.comments.length} comments');
       } else {
@@ -368,8 +366,8 @@ If you would like to contribute with other parts of the API, feel free to make a
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: http://github.com/ivoleitao/shadertoy_client/issues/new
+[tracker]: https://github.com/ivoleitao/shadertoy_client/issues/new
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/ivoleitao/shadertoy_client/LICENSE) file for details

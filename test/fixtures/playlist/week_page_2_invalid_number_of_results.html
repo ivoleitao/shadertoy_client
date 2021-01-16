@@ -1,0 +1,1301 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    
+<title>Playlist - Shadertoy BETA</title>
+<meta charset="utf-8" />
+<meta name="Keywords" content="shadertoy, shader toy, quilez, inigo, jeremias, pol, fractals, demoscene, computer graphics, mathematics, rendering, demo, 3D, realtime, shader, raytracing, raymarching, webgl, glsl" />
+<meta name="Description" content="Build shaders, share them, and learn from the best community." />
+<meta name="Author" content="Beautypi" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="image_src" href="https://www.shadertoy.com/img/logo.png" />
+<link rel="apple-touch-icon" href="/img/launch_icon_57.png"/>
+<link rel="apple-touch-icon" sizes="72x72" href="/img/launch_icon_72.png"/>
+<link rel="apple-touch-icon" sizes="114x114" href="/img/launch_icon_114.png"/>
+<link rel="shortcut icon" href="/img/favicon.ico"/>
+
+<style>::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+    background: #404040;
+}
+
+::-webkit-scrollbar-thumb
+{
+    background: #909090;
+    border-radius: 0ex;
+}
+
+::-webkit-scrollbar-corner
+{
+    background: #000;
+}
+
+::-webkit-input-placeholder
+{
+	font-style:italic;
+}
+input:-moz-placeholder, textarea:-moz-placeholder
+{
+	font-style:italic;
+}
+input.placeholder-text, textarea.placeholder-text
+{
+	font-style:italic;
+}
+
+pre 
+{
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
+@font-face
+{
+    font-family: Lobster;
+    src: url("/img/lobster.otf") format("opentype");
+}
+
+div#centerScreen
+{
+    left: 50%;
+    top: 50%;
+    position: absolute;
+}
+
+a.headerLinks:hover
+{
+    background-color:#505050;
+    color : #ff8020;
+}
+
+body
+{
+    color: #000000;
+    font-size:12px;
+    font-style:normal;
+    font-family:Tahoma,Arial;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    padding:0px;
+    margin:0px;
+    text-align: left;
+    background-color: #d0d0d0;
+    background-repeat: repeat;
+    user-select: text;
+}
+
+a,
+a:hover,
+a:visited
+{
+  color : inherit;
+}
+
+div#content {
+    width: 95%;
+    overflow: hidden;
+    margin: auto;
+    padding: 0px;
+    min-height: calc(100vh - 80px);
+    //box-sizing: border-box;
+}
+
+
+.notificationCount
+{
+ background-color:#ff0000;
+ padding-left:3px;
+ padding-right:1px;
+ padding-top:1px;
+ padding-bottom:1px;
+}
+
+div#header
+{
+    background-color: #404040;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    color: #ffffff;
+    display: flex;
+    flex-direction:row;
+}
+
+#headerBlock1
+{
+    width: 50%;
+    display:flex;
+    align-items:center;
+}
+
+a#headerTitle
+{
+    font-size: 2.25em;
+    font-family: Lobster,Tahoma,Arial;
+    text-decoration: none;
+    padding-left:32px;
+    padding-right:32px;
+}
+
+#headerSearch
+{
+    display: inline-block;
+    color: #000000;
+    width: 300px;
+}
+
+input[type=search]#mySearch
+{
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid black;
+    padding:12px;
+}
+
+#headerBlock2
+{
+    width: 50%;
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+
+a#headerTitle:hover
+{
+    color : #ff8020;
+}
+
+a.headerLinks
+{
+    font-weight: bold;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    padding-left: 14px;
+    padding-right: 14px;
+    margin:0px;
+    text-decoration: none;
+    transition: background-color 0.15s linear, color 0.15s linear;
+}
+
+#footer
+{
+    background-color: rgba(64,64,64,0.25);
+    color: #000000;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+#footer div
+{
+    padding-top:10px;
+    padding-bottom:0px;
+    padding-left:16px;
+    padding-right:16px;
+}
+
+#footer div ul
+{
+    margin-left:0px;
+    padding-left:16px;
+}
+
+#footer div ul li
+{
+    padding-top:6px;
+}
+
+a.regular
+{
+    font-weight:bold;
+    text-decoration:none
+}
+
+a.regular:hover
+{
+  color : #ff8020;
+}
+
+a.user
+{
+    font-weight:bold;
+    text-decoration:none;
+}
+
+a.user:hover
+{
+  color : #ff8020;
+  text-decoration: underline;
+}
+
+.uiButton
+{
+    border: none;
+    outline: none;
+    margin: 0px;
+    padding: 0px;
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.uiButton:hover
+{
+    box-shadow: inset 0px 0px 1px 1px #808080, 0px 0px 1px 1px #808080;
+}
+
+.uiDivBUtton
+{
+    cursor:pointer;
+}
+
+.uiDivBUtton:hover
+{
+    color: #ffffff;
+}
+
+
+.dialog
+{
+    display: block;
+    background-color: #e0e0e0;
+    color: #000000;
+    border:1px solid #000;
+    padding:0px;
+    margin:0px;
+    text-align:left;
+    border-radius: 4px;
+    box-shadow:4px 4px 6px 0px rgba(0,0,0,0.5);
+    overflow: hidden;
+    z-index:1000;
+    visibility: hidden;
+    opacity:0;
+    -moz-transition: opacity 0.25s linear,visibility 0.25s linear;
+    -webkit-transition: opacity 0.25s linear,visibility 0.25s linear;
+    transition: opacity 0.25s linear,visibility 0.25s linear;
+}
+
+.dialogHeader
+{
+    left:0px;
+    top: 0px;
+    width:100%;
+    height:32px;
+    position: absolute;
+    background-color: #808080;
+    cursor:move;
+}
+
+.dialogTitle
+{
+    left: 12px;
+    top: 4px;
+    position: absolute;
+    padding: 0px;
+    margin: 0px;
+    color:#000000;
+    font-size:1.5em;
+    text-align: left;
+    user-select: none;
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+}
+
+.dialogOverlay
+{
+    z-index:1000;
+
+    visibility: hidden;
+    opacity:0;
+    -moz-transition: opacity 0.25s linear,visibility 0.25s linear;
+    -webkit-transition: opacity 0.25s linear,visibility 0.25s linear;
+    transition: opacity 0.25s linear,visibility 0.25s linear;
+
+    left:0px;
+    top:0px;
+    padding:0px;
+    margin:0px;
+    width:100%;
+    height:100%;
+    position:absolute;
+
+    background-color:rgba(0,0,0,.4);
+}
+
+.viewsIcon, .likesIcon
+{
+    border: none;
+    outline: none;
+    display:inline-block;
+    background-repeat:no-repeat;
+    top:0px;
+    left:0px;
+    padding:0px;
+    padding-right: 2px;
+    margin:0px;
+    position:relative;
+}
+
+.userPictureSmall
+{
+    background-color:#808080;
+    border: 1px solid #000000;
+    width:32px;
+    height:32px;
+}
+
+.dialogCloseButton
+{
+    right:8px;
+    top: 4px;
+    width:22px;
+    height:22px;
+    position: absolute;
+    background-image: url("/img/close.png");
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.dialogCloseButton:hover
+{
+    box-shadow: inset 0px 0px 4px 2px #ffffff, 0px 0px 4px 2px #ffffff;
+}
+
+.dialogContentButtons
+{
+     padding:0;
+     border:0;
+     text-align: justify;
+     left: 24px;
+     bottom:40px;
+     position:absolute;
+}
+
+.dialogButton
+{
+    text-align: center;
+    vertical-align: middle;
+    display: inline-block;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    padding-bottom:5px;
+    padding-top:4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-left:4px;
+    margin-right:4px;
+    text-decoration: none;
+    color:#000000;
+    width: 80px;
+    -moz-transition:    background-color 0.15s linear, color 0.15s linear;
+    -webkit-transition: background-color 0.15s linear, color 0.15s linear;
+    transition:         background-color 0.15s linear, color 0.15s linear;
+}
+
+.dialogButton:hover
+{
+  background-color:#808080;
+  color : #ff8020;
+}
+
+.dialogCloseButton:hover
+{
+    box-shadow: inset 0px 0px 4px 2px #ffffff, 0px 0px 4px 2px #ffffff;
+}
+
+.dialogContent
+{
+    color: inherit;
+    overflow: auto;
+    width:100%;
+    height:100%;
+    left: 0px;
+    top: 32px;
+    position:absolute
+}
+
+.dialogContentBody
+{
+    color: inherit;
+    width:100%;
+    height:auto;
+    padding-top:24px;
+    padding-bottom:24px;
+    padding-left:24px;
+    padding-right:24px;
+    text-align: left;
+}
+
+.formButton
+{
+    font-weight:bold;
+	color:#ffffff;
+	border:none;
+    text-align:center;
+	background-color:#808080;
+    border-radius: 4px;
+	padding-left:8px;
+	padding-right:8px;
+	padding-top:4px;
+	padding-bottom:4px;
+    cursor:pointer;
+    min-width:80px;
+    box-sizing: border-box;
+}
+
+.formButton:hover
+{
+	background-color: #e0e0e0;
+}
+
+.formButton:disabled
+{
+	color:#b0b0b0;
+	background-color:#808080;
+}
+
+.formButtonSmall
+{
+    color:#ffffff;
+    border:none;
+    text-align:center;
+    background-color:#808080;
+    border-radius: 4px;
+    padding-left:2px;
+    padding-right:2px;
+    padding-top:2px;
+    padding-bottom:2px;
+    cursor:pointer;
+    min-width:40px;
+}
+
+.formButtonSmall:hover
+{
+    background-color: #e0e0e0;
+}
+
+.formButtonSmall:disabled
+{
+    color:#b0b0b0;
+    background-color:#808080;
+}
+
+.formButtonSmall.disabled2,
+.formButton.disabled2 { color:#b0b0b0; background-color:#808080; pointer-events: none; }
+
+.inputForm
+{
+    padding-left:2%;
+    padding-right:2%;
+    resize: none;
+    text-align: left;
+    background-color:#e0e0e0;
+    outline: none;
+    border-radius: 4px;
+    border: 1px solid #808080;
+    color:inherit;
+    box-sizing: border-box;
+}
+
+.inputForm:focus
+{
+    border: 1px solid #AFCDD8;
+    background-color: #EBF2F4;
+}
+
+.transparentPannel
+{
+    background-color:rgba(64,64,64,0.1);
+    padding:16px;
+}
+
+.comment, .commentSelf, .commentNew
+{
+    border-radius: 4px;
+    width: 100%;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    margin-bottom: 6px;
+
+    padding: 14px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 32px auto 8px;
+    grid-template-rows: 1fr;
+    grid-gap:8px;
+}
+
+.comment:nth-child(even)
+{
+    background-color: rgba(64,64,64,0.1);
+}
+
+.comment:nth-child(odd)
+{
+    background-color: rgba(128,128,128,0.1);
+}
+
+.commentSelf
+{
+    background-color: rgba(240,160,64,0.1);
+}
+
+.commentNew
+{
+    padding-right: 0px;
+    grid-template-columns: 40px auto;
+}
+
+.commentContent
+{
+    vertical-align: top;
+    text-align: left;
+    word-break: break-all;
+    word-break: break-word;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+}
+
+
+/* ----------------------- media resolutions ------------------------ */
+
+@media screen and (max-width:799px)
+{
+    div#header {flex-direction:column; }
+    #headerBlock1 { width:100%; }
+    #headerBlock2 { width:100%; justify-content: space-around;}
+    div#headerSearch {width:200px;}
+    input#mySearch { width:200px; left:21px; height:22px; border-radius:6px; padding-left:8px; padding-right:8px; }
+    .previewText { width:130px; }
+    .transparentPannel { padding:10px; }
+}
+
+@media screen and (min-width:800px) and (max-width:1279px)
+{
+    body { font-size: 9px; }
+    div#headerSearch {width: 250px;}
+    input#mySearch { width:250px; left:21px; height:22px; border-radius:6px; padding-left:8px; padding-right:8px; }
+    .previewText { width:130px; }
+    .transparentPannel { padding:11px; }
+}
+
+@media screen and (min-width:1280px) and (max-width:1439px)
+{
+    body { font-size: 10px; }
+    div#headerSearch {width: 300px;}
+    input#mySearch { width:300px; left:21px; height:22px; border-radius:6px; padding-left:8px; padding-right:8px; }
+    .dialogHeader { height:28px; }
+    .previewText { width:180px; }
+    .transparentPannel { padding:12px; }
+}
+
+@media screen and (min-width:1440px) and (max-width:1919px)
+{
+    div#headerSearch {width: 300px;}
+    input#mySearch { width:300px; left:21px; height:22px; border-radius:6px; padding-left:8px; padding-right:8px; }
+    .dialogHeader { height:28px; }
+    .previewText { width:180px; }
+    .transparentPannel { padding:12px; }
+}
+
+@media screen and (min-width:1920px) and (max-width:2559px)
+{
+    div#headerSearch {width: 300px;}
+    input#mySearch { width:300px; left:21px; height:22px; border-radius:6px; padding-left:8px; padding-right:8px; }
+    .dialogHeader { height:32px; }
+    .previewText { width:220px; }
+    .transparentPannel { padding:16px; }
+}
+
+@media screen and (min-width:2560px) 
+{
+    div#headerSearch {width: 300px;}
+    input#mySearch { width:300px; left:21px; height:22px; border-radius:6px; padding-left:8px; padding-right:8px; }
+    .dialogHeader { height:32px; }
+    .previewText { width:220px; }
+    .transparentPannel { padding:16px; }
+}
+body
+{
+    background-image: url("/img/themes/classic/background.jpg");
+}
+</style>
+    <script src="/lib/piLibs.js?v=86"></script>
+    <script src="/js/effect.js?v=86"></script>
+    <script src="/js/pgResults.js?v=86"></script>
+	<script src="/js/report.js?v=86"></script>
+    <style>
+    .shaderPreview
+    {
+    display: block;
+    background-color: #000000;
+    background-image: url("/img/loading.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+    padding: 0px;
+    margin: 0px;
+    border: 0px solid #000000;
+    border-radius: 8px;
+    width:100%;
+    height:100%;
+    position: absolute;
+    overflow:hidden;
+    }
+
+    .previewInfo
+    {
+    width: 100%;
+    left: 0px;
+    top: 2px;
+    position: relative;
+    visibility: hidden;
+    }
+
+    .previewCanvas
+    {
+    left: 0px;
+    top: 0px;
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    cursor: pointer;
+    width:100%;
+    height:100%;
+    border-radius: 8px;
+    border: 0px solid #000000;
+    backgroundColor: transparent;
+visibility: hidden;
+opacity:0;
+transition: opacity 1.0s ease;
+    }
+
+    .previewText
+    {
+        text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 1px;
+    }
+
+    .previewTextUser
+    {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 3px;
+    }
+
+    .previewStats
+    {
+    padding-right: 1px;
+    right: 0px;
+    top: 0px;
+    position: absolute;
+    }
+
+    .previewErrorContainer
+    {
+    left:0px;
+    top:0px;
+    width:100%;
+    height:100%;
+    padding:0px;
+    margin:0px;
+    background-color:#000000;
+    border-radius:8px;
+    cursor:pointer;
+    visibility:hidden;
+    }
+
+    .previewErrorMessage
+    {
+    top:50%;
+    position:absolute;
+    width:100%;
+    text-align:center;
+    padding:0;
+    margin:auto;
+    color:#ff0000;
+    font-size:2em;
+    font-style:italic;
+    }
+
+    .previewNoGLContainter
+    {
+    left:0px;
+    top:0px;
+    width:100%;
+    height:100%;
+    padding:0px;
+    margin:0px;
+    position:absolute;
+    background-color:#000000;
+    border-radius:8px;
+    cursor:pointer;
+    pointer-events:none;
+    visibility:hidden;
+    font-size:2em;
+    }
+
+    .previewNoGLMessage
+    {
+    width:86%;
+    height:90%;
+    padding-left:7%;
+    padding-right:7%;
+    padding-top:10%;
+    padding-bottom:0px;
+    color:#ff0000;
+    position:absolute;
+    visibility:hidden;
+    }
+
+    .previewThumbnailContainer
+    {
+    width:100%;
+    height:100%;
+    left:0px;
+    top:0px;
+    padding:0px;
+    margin:0px;
+    position:absolute;
+    cursor:pointer;
+    visibility:hidden;
+    border-radius:8px;
+    border:0px solid #000000;
+    }
+
+    .previewThumbnailImage
+    {
+    width:100%;
+    height:100%;
+    left:0px;
+    top:0px;
+    padding:0px;
+    margin:0px;
+    position:absolute;
+    cursor:pointer;
+    border-radius:8px;
+    border:0px solid #000000;
+opacity: 0.0;
+transition: opacity 1.0s ease;
+    }
+
+    .previewThumbnailIcon
+    {
+    width:64px;
+    height:32px;
+    left:0px;
+    top:0px;
+    padding:0px;
+    padding-top:12px;
+    margin:0px;
+    position:absolute;
+    color:#ffffff;
+    background-color:#ff8020;
+    font-weight:bold;
+    border-radius:0px 0px 8px 0px;
+    text-align:center;
+    //visibility:hidden;
+    }
+
+
+    .previewUIContainter
+    {
+    display: block;
+    right:0px;
+    top:0px;
+    padding:0px;
+    margin:0px;
+    position:absolute;
+    //cursor:pointer;
+    //pointer-events:none;
+    visibility:hidden;
+    }
+</style>
+
+<script>
+    function previewHide(me)
+    {
+    me.mBase.style.visibility = "hidden";
+    me.mCanvas.style.visibility = "hidden";
+    me.mCanvas2D.style.visibility = "hidden";
+    me.mNoWebGL.style.visibility = "hidden";
+    me.mError.style.visibility = "hidden";
+    me.mCont.style.visibility = "hidden";
+    }
+
+    function previewShowRender(me)
+    {
+    me.mBase.style.visibility = "visible";
+    me.mCanvas.style.visibility = "visible";
+me.mCanvas.style.opacity = 1.0;
+    me.mCanvas.style.borderRadius ="8px;";
+//  me.mCanvas2D.style.visibility = "hidden";
+    me.mNoWebGL.style.visibility = "hidden";
+    me.mError.style.visibility = "hidden";
+    me.mCont.style.visibility = "visible";
+    }
+
+    function previewShowScreenshot(me, message)
+    {
+    me.mBase.style.visibility = "visible";
+    me.mCanvas.style.visibility = "hidden";
+    me.mCanvas2D.style.visibility = "visible";
+me.mThumbnailImg.style.opacity = 1.0;
+    me.mNoWebGL.style.visibility = "hidden";
+    me.mError.style.visibility = "hidden";
+    me.mCont.style.visibility = "visible";
+    me.mThumbnailWar1.style.visibility = (message===1)?"visible":"hidden";
+    me.mThumbnailWar2.style.visibility = (message===2)?"visible":"hidden";
+    }
+
+    function previewShowLoading(me)
+    {
+    me.mBase.style.visibility = "visible";
+    me.mCanvas.style.visibility = "hidden";
+    me.mCanvas2D.style.visibility = "hidden";
+    me.mNoWebGL.style.visibility = "hidden";
+    me.mError.style.visibility = "hidden";
+    me.mCont.style.visibility = "hidden";
+
+    me.mLink.style.visibility = "visible";
+    me.mBase.style.backgroundColor = "#ff0000;"
+    me.mCont.style.visibility = "visible";
+    }
+
+    function previewShowNoWebGL(me, shaderID)
+    {
+    me.mBase.style.visibility = "visible";
+    me.mCanvas.style.visibility = "hidden";
+    me.mCanvas2D.style.visibility = "hidden";
+    me.mNoWebGL.style.visibility = "visible";
+    me.mError.style.visibility = "visible";
+    me.mThumbnailImgNoWebGL.onerror = function(ev) 
+                                      { 
+                                            me.mThumbnailImgNoWebGL.style.visibility="hidden"; 
+                                            me.mMessageNoWebGL.style.visibility="visible"; 
+                                      };
+    me.mThumbnailImgNoWebGL.src = "/media/shaders/" + shaderID + ".jpg";
+    }
+
+    function previewShowError(me)
+    {
+    me.mBase.style.visibility = "visible";
+    me.mCanvas.style.visibility = "hidden";
+    me.mCanvas2D.style.visibility = "hidden";
+    me.mNoWebGL.style.visibility = "hidden";
+    me.mError.style.visibility = "visible";
+    me.mCont.style.visibility = "visible";
+    }
+
+    function previewLoadScreenshot( me, cbSuccess, cbError, shaderID )
+    {
+    var url = "/media/shaders/" + shaderID + ".jpg";
+    me.mThumbnailImg.onload = cbSuccess;
+    me.mThumbnailImg.onerror = function(ev) { cbError(); };
+    me.mThumbnailImg.src = url;
+    }
+        
+    function createPreview(id)
+    {
+        var bar = document.getElementById( "Preview_"+id+"_Canvas" );
+        bar.width = bar.offsetWidth;
+        bar.height = bar.offsetHeight;
+        bar.mId = id;
+
+        return { mBase: document.getElementById( "Preview_"+id+"_Container" ),
+        mLink: document.getElementById( "Preview_"+id+"_Link" ),
+        mCanvas: bar,
+        mCont: document.getElementById( "Preview_"+id+"_Info" ),
+        mTextA: document.getElementById( "Preview_"+id+"_Text" ),
+        mTextB: document.getElementById( "Preview_"+id+"_TextUser" ),
+        mTextC: document.getElementById( "Preview_"+id+"_Stats" ),
+        mNoWebGL: document.getElementById( "Preview_"+id+"_NoWebGL" ),
+        mError: document.getElementById( "Preview_"+id+"_Error" ),
+        mCanvas2D: document.getElementById( "Preview_"+id+"_Thumnail" ),
+        mThumbnailImg: document.getElementById( "Preview_"+id+"_ThumnailImage" ),
+        mThumbnailWar1: document.getElementById( "Preview_"+id+"_ThumnailWarning1" ),
+        mThumbnailWar2: document.getElementById( "Preview_"+id+"_ThumnailWarning2" ),
+        mThumbnailImgNoWebGL: document.getElementById( "Preview_"+id+"_ThumnailImageNoWebGL" ),
+        mMessageNoWebGL: document.getElementById( "Preview_"+id+"_MessageNoWebGL"),
+        mUI: document.getElementById( "Preview_"+id+"_UI" )
+        };
+    }
+</script>
+
+    <style>
+
+    div#info
+    {
+    }
+
+    div#privacy
+    {
+        margin-left:4px;
+        display:inline-block;
+    }
+
+	div#controls
+    {
+        width:100%;
+		overflow:auto;
+    }
+
+	div#goSlideshow
+    {
+		float:right;
+    }
+
+    div#shaderGrid
+    {
+        display:grid;
+        width:100%;
+        margin-top:24px;
+        margin-bottom:32px;
+    }
+
+    div#navigation
+    {
+        text-align: center;
+        width: 100%;
+        position:relative;
+    }
+
+    a.pageButtons
+    {
+        text-align: center;
+        vertical-align: middle;
+        margin-left: 12px;
+        display: inline-block;
+        border-radius: 4px;
+        font: bold 12px arial,serif;
+        cursor: pointer;
+        padding-bottom:5px;
+        padding-top:4px;
+        padding-left: 8px;
+        padding-right: 8px;
+        margin-left:4px;
+        margin-right:4px;
+        text-decoration: none;
+        -moz-transition:    background-color 0.15s linear, color 0.15s linear;
+        -webkit-transition: background-color 0.15s linear, color 0.15s linear;
+        transition:         background-color 0.15s linear, color 0.15s linear;
+    }
+
+    a.pageButtons:hover
+    {
+      background-color:#808080;
+      color : #ff8020;
+    }
+
+    .pageButtonsCurrent
+    {
+        text-align: center;
+        vertical-align: middle;
+        margin-left: 12px;
+        display: inline-block;
+        border-radius: 4px;
+        font: bold 12px arial,serif;
+        background-color: #808080;
+        padding-bottom:5px;
+        padding-top:4px;
+        padding-left: 8px;
+        padding-right: 8px;
+        margin-left:4px;
+        margin-right:4px;
+        text-decoration: none;
+        color:#000000;
+    }
+
+    /* ----------------------- media resolutions ------------------------ */
+
+    @media screen and (max-width:799px) 
+    {
+        div#shaderGrid
+        {
+            grid-template-columns:176px auto 176px auto 176px auto 176px;
+            grid-template-rows:115px 32px 115px 32px 115px;
+        }
+        .searchResultContainer { width:176px; height:115px; }
+        .searchResultCanvas    { width:176px; height:99px; }
+    }
+
+    @media screen and (min-width:1280px) and (max-width:1439px) 
+    {
+        div#shaderGrid
+        {
+            grid-template-columns:208px auto 208px auto 208px auto 208px;
+            grid-template-rows:133px 32px 133px 32px 133px;
+        }
+        .searchResultContainer { width:208px; height:133px; }
+        .searchResultCanvas    { width:208px; height:117px; }
+    }
+
+    @media screen and (min-width:1440px) and (max-width:1919px) 
+    {
+        div#shaderGrid
+        {
+            grid-template-columns:240px auto 240px auto 240px auto 240px;
+            grid-template-rows:151px 32px 151px 32px 151px;
+        }
+        .searchResultContainer { width:240px; height:151px; }
+        .searchResultCanvas    { width:240px; height:135px; }
+    }
+
+    @media screen and (min-width:1920px) and (max-width:2559px) 
+    {
+        div#shaderGrid
+        {
+            grid-template-columns:320px auto 320px auto 320px auto 320px auto 320px;
+            grid-template-rows:196px 32px 196px 32px 196px;
+        }
+        .searchResultContainer { width:320px; height:196px; }
+        .searchResultCanvas    { width:320px; height:180px; }
+    }
+
+    @media screen and (min-width:2560px) 
+    {
+        div#shaderGrid
+        {
+            grid-template-columns:320px auto 320px auto 320px auto 320px auto 320px;
+            grid-template-rows:196px 32px 196px 32px 196px;
+        }
+        .searchResultContainer { width:320px; height:196px; }
+        .searchResultCanvas    { width:320px; height:180px; }
+    }
+    </style>
+    <script>
+    var gShaderIDs=["tlySDV","WdVXWy","tlV3zy","wtfBDf","Ws2GD1","ldd3DX","lsVBRc","XdcfDf","tdBGWD","tdjyzz","3tKGDW","wlVGRz","4s3GW2","3s2BWV","4dGyRh"];var gPlaylistID="week";var gUseScreenshots=0;
+var gThemeName = "classic";
+
+    function onDeleteShader(shaderID)
+    {
+        var playlistID = gPlaylistID;
+
+        var req = new XMLHttpRequest();
+        req.onload = function()
+        {
+            var jsn = req.response;
+            if( jsn==null ) return;
+            if( jsn.result!=0 )
+            {
+                alert( "The shader couldn't be removed from the playlist. Please try again." );
+                console.log( "Error: The shader couldn't be removed from the playlist. Please try again." );
+            }
+            else
+            {
+                window.location.reload();
+            }
+        }
+        req.open( "POST", "/shadertoy", true );
+        req.responseType = "json";
+        req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        var str = "prs=1&pid=" + playlistID + "&sid=" + shaderID;
+        req.send( str );
+    }
+    </script>
+</head>
+
+<body onload="resultsInit(15,onDeleteShader,'Shaders of the Week');">
+
+<!-- header =================================================================================== -->
+
+
+<div id="header">
+
+    <div id="headerBlock1">
+        <a href="/" id="headerTitle">Shadertoy</a>
+        <form name="formSearch" action="/results" method="get" style="display:inline-block;">
+        <div  id="headerSearch">
+            <input type="search" id="mySearch" name="query" placeholder="Search..." value=""/>
+        </div>
+        </form>
+    </div>
+
+    <div id="headerBlock2">
+            <a class="headerLinks" href="/browse">Browse</a>
+        <a class="headerLinks" href="/new">New</a>
+        <a class="headerLinks" href="/signin">Sign In</a>
+        </div>
+</div>
+<!-- content ================================================================================== -->
+
+<div id="content">
+
+  <div id="info">
+        <span style="font-size:1.5em">
+        <span style="font-weight:bold;font-size:2.0em;margin-right:8px;">Shaders of the Week</span> by <a class='user' href='/user/shadertoy'> shadertoy </a>
+    
+        <div id="privacy">(public playlist, 391 shaders)        </div>
+        <br>
+        <br>
+        Playlist with every single shader of the week ever.        </span>
+  </div>
+
+  <div id="controls">
+        <div id="goSlideshow"><a class="pageButtons" href="/slideshow?playlist=week&sort=popular">Slideshow</a></div>
+  </div>
+
+  <div id="shaderGrid">
+    <div class='searchResult' style='grid-column:1;grid-row:1;'><div class='searchResultContainer' id='Preview_0_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_0_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_0_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_0_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_0_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_0_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_0_Thumnail'>        <img class='previewThumbnailImage' id='Preview_0_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_0_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_0_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_0_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_0_Info'>  <span class='previewText'  id='Preview_0_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_0_TextUser'></span>  <span class='previewStats' id='Preview_0_Stats'></span></div></div><div class='searchResult' style='grid-column:3;grid-row:1;'><div class='searchResultContainer' id='Preview_1_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_1_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_1_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_1_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_1_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_1_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_1_Thumnail'>        <img class='previewThumbnailImage' id='Preview_1_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_1_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_1_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_1_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_1_Info'>  <span class='previewText'  id='Preview_1_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_1_TextUser'></span>  <span class='previewStats' id='Preview_1_Stats'></span></div></div><div class='searchResult' style='grid-column:5;grid-row:1;'><div class='searchResultContainer' id='Preview_2_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_2_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_2_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_2_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_2_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_2_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_2_Thumnail'>        <img class='previewThumbnailImage' id='Preview_2_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_2_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_2_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_2_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_2_Info'>  <span class='previewText'  id='Preview_2_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_2_TextUser'></span>  <span class='previewStats' id='Preview_2_Stats'></span></div></div><div class='searchResult' style='grid-column:7;grid-row:1;'><div class='searchResultContainer' id='Preview_3_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_3_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_3_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_3_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_3_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_3_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_3_Thumnail'>        <img class='previewThumbnailImage' id='Preview_3_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_3_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_3_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_3_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_3_Info'>  <span class='previewText'  id='Preview_3_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_3_TextUser'></span>  <span class='previewStats' id='Preview_3_Stats'></span></div></div><div class='searchResult' style='grid-column:9;grid-row:1;'><div class='searchResultContainer' id='Preview_4_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_4_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_4_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_4_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_4_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_4_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_4_Thumnail'>        <img class='previewThumbnailImage' id='Preview_4_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_4_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_4_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_4_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_4_Info'>  <span class='previewText'  id='Preview_4_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_4_TextUser'></span>  <span class='previewStats' id='Preview_4_Stats'></span></div></div><div class='searchResult' style='grid-column:1;grid-row:3;'><div class='searchResultContainer' id='Preview_5_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_5_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_5_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_5_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_5_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_5_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_5_Thumnail'>        <img class='previewThumbnailImage' id='Preview_5_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_5_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_5_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_5_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_5_Info'>  <span class='previewText'  id='Preview_5_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_5_TextUser'></span>  <span class='previewStats' id='Preview_5_Stats'></span></div></div><div class='searchResult' style='grid-column:3;grid-row:3;'><div class='searchResultContainer' id='Preview_6_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_6_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_6_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_6_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_6_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_6_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_6_Thumnail'>        <img class='previewThumbnailImage' id='Preview_6_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_6_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_6_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_6_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_6_Info'>  <span class='previewText'  id='Preview_6_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_6_TextUser'></span>  <span class='previewStats' id='Preview_6_Stats'></span></div></div><div class='searchResult' style='grid-column:5;grid-row:3;'><div class='searchResultContainer' id='Preview_7_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_7_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_7_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_7_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_7_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_7_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_7_Thumnail'>        <img class='previewThumbnailImage' id='Preview_7_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_7_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_7_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_7_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_7_Info'>  <span class='previewText'  id='Preview_7_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_7_TextUser'></span>  <span class='previewStats' id='Preview_7_Stats'></span></div></div><div class='searchResult' style='grid-column:7;grid-row:3;'><div class='searchResultContainer' id='Preview_8_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_8_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_8_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_8_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_8_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_8_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_8_Thumnail'>        <img class='previewThumbnailImage' id='Preview_8_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_8_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_8_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_8_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_8_Info'>  <span class='previewText'  id='Preview_8_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_8_TextUser'></span>  <span class='previewStats' id='Preview_8_Stats'></span></div></div><div class='searchResult' style='grid-column:9;grid-row:3;'><div class='searchResultContainer' id='Preview_9_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_9_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_9_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_9_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_9_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_9_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_9_Thumnail'>        <img class='previewThumbnailImage' id='Preview_9_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_9_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_9_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_9_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_9_Info'>  <span class='previewText'  id='Preview_9_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_9_TextUser'></span>  <span class='previewStats' id='Preview_9_Stats'></span></div></div><div class='searchResult' style='grid-column:1;grid-row:5;'><div class='searchResultContainer' id='Preview_10_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_10_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_10_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_10_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_10_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_10_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_10_Thumnail'>        <img class='previewThumbnailImage' id='Preview_10_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_10_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_10_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_10_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_10_Info'>  <span class='previewText'  id='Preview_10_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_10_TextUser'></span>  <span class='previewStats' id='Preview_10_Stats'></span></div></div><div class='searchResult' style='grid-column:3;grid-row:5;'><div class='searchResultContainer' id='Preview_11_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_11_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_11_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_11_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_11_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_11_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_11_Thumnail'>        <img class='previewThumbnailImage' id='Preview_11_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_11_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_11_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_11_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_11_Info'>  <span class='previewText'  id='Preview_11_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_11_TextUser'></span>  <span class='previewStats' id='Preview_11_Stats'></span></div></div><div class='searchResult' style='grid-column:5;grid-row:5;'><div class='searchResultContainer' id='Preview_12_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_12_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_12_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_12_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_12_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_12_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_12_Thumnail'>        <img class='previewThumbnailImage' id='Preview_12_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_12_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_12_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_12_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_12_Info'>  <span class='previewText'  id='Preview_12_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_12_TextUser'></span>  <span class='previewStats' id='Preview_12_Stats'></span></div></div><div class='searchResult' style='grid-column:7;grid-row:5;'><div class='searchResultContainer' id='Preview_13_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_13_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_13_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_13_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_13_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_13_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_13_Thumnail'>        <img class='previewThumbnailImage' id='Preview_13_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_13_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_13_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_13_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_13_Info'>  <span class='previewText'  id='Preview_13_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_13_TextUser'></span>  <span class='previewStats' id='Preview_13_Stats'></span></div></div><div class='searchResult' style='grid-column:9;grid-row:5;'><div class='searchResultContainer' id='Preview_14_Container'>  <a class='shaderPreview searchResultCanvas' id='Preview_14_Link'>    <div class='previewNoGLContainter searchResultCanvas' id='Preview_14_NoWebGL'>        <img class='previewThumbnailImage' id='Preview_14_ThumnailImageNoWebGL'></img>        <div class='previewNoGLMessage' id='Preview_14_MessageNoWebGL'>No Screenshot Availabe</div>    </div>    <div class='previewErrorContainer searchResultCanvas' id='Preview_14_Error'>        <div class='previewErrorMessage'>Shader Error</div>    </div>    <div class='previewThumbnailContainer searchResultCanvas' id='Preview_14_Thumnail'>        <img class='previewThumbnailImage' id='Preview_14_ThumnailImage'></img>        <div class='previewThumbnailIcon' id='Preview_14_ThumnailWarning1' title='This shader takes too long to compile, a preview image is shown instead to improve browsing.
+Click on the shader to see it in real-time.'>Warning</div>        <div class='previewThumbnailIcon' id='Preview_14_ThumnailWarning2' title='You are using static shader previews.
+Click on the shader to see it in real-time.'>Preview</div>    </div>    <canvas class='previewCanvas searchResultCanvas' id='Preview_14_Canvas'></canvas>  </a></div><div class='previewInfo' id='Preview_14_Info'>  <span class='previewText'  id='Preview_14_Text'></span>  <span>by</span>  <span class='previewTextUser'  id='Preview_14_TextUser'></span>  <span class='previewStats' id='Preview_14_Stats'></span></div></div>  </div>
+
+  <div id="navigation">
+
+      <div id="navButtons" style="display:inline-block;">
+
+          <a id="pageButton"0 class="pageButtons" href='week?from=0&num=15'>1</a><div id="pageButton"1 class="pageButtonsCurrent" href='week?from=15&num=15'>2</div><a id="pageButton"2 class="pageButtons" href='week?from=30&num=15'>3</a><a id="pageButton"3 class="pageButtons" href='week?from=45&num=15'>4</a><span>...</span><a id="pageButtonLast" class="pageButtons" href='week?from=390&num=15'>27</a>      </div>
+      <div id="numResults" style="display:inline-block;margin-left:32px">(-1 shaders)</div>
+  </div>
+
+</div>
+
+<!-- footer ================================================================================== -->
+
+<div id="footer">
+    
+    <div><span style="color:#ffffff;">Community Forums</span>
+      <ul>
+      <li><a class="regular" href="/events">Official Events</a></li>
+      <li><a class="regular" href="https://www.facebook.com/groups/147749602472741">In Facebook (english)</a></li>
+      <li><a class="regular" href="https://www.facebook.com/groups/1339783682699494">In Facebook (korean)</a></li>
+      <li><a class="regular" href="https://discord.gg/XtmMN6E">In Discord</a> (<a class="regular" href="https://discordapp.com/channels/578696555612209173/579531723348639754">direct link</a>)</li>
+      </ul>
+    </div>
+
+    <div><span style="color:#ffffff;">Feedback and Support</span>
+      <ul>
+      <li><a class="regular" href="https://www.facebook.com/Shadertoy">Facebook</a></li>
+      <li><a class="regular" href="https://twitter.com/shadertoy">Twitter</a></li>
+      <li><a class="regular" href="https://www.patreon.com/shadertoy">Patreon</a></li>
+      <li><a class="regular" href="https://trello.com/b/5hM0CjId">Roadmap</a></li>
+
+      
+      </ul>
+    </div>
+
+    <div><span style="color:#ffffff;">Shadertoy</span>
+      <ul>
+      <li><a class="regular" href="/store">Store</a></li>
+      <li><a class="regular" href="/howto">Documentation</a></li>
+      <li><a class="regular" href="/terms">Terms & Privacy</a></li>
+      <li><a class="regular" href="/about">About</a></li>
+      </ul>
+    </div>
+
+    <div><span style="color:#ffffff;">Apps and Plugins</span>
+      <ul>
+      <li><a class="regular" href="https://itunes.apple.com/us/app/shadertoy/id717961814">Official iPhone App</a> by <a class="user" href="/user/reinder">Reinder</a></li>
+      <li><a class="regular" href="https://steamcommunity.com/sharedfiles/filedetails/?id=1726697188">Screensaver</a> by <a class="user" href="/user/kosro">Kosro</a></li>
+      <li><a class="regular" href="https://chrome.google.com/webstore/detail/shadertoy-unofficial-plug/ohicbclhdmkhoabobgppffepcopomhgl">Shadertoy plugin</a> by <a class="user" href="/user/patu">Patu</a></li>
+      </ul>
+    </div>
+
+    <div><span style="color:#ffffff;">Tutorials</span>
+      <ul>
+      <li><a class="regular" href="https://www.youtube.com/watch?v=0ifChJ0nJfM">Shader coding intro</a> by <a class="user" href="/user/iq">iq</a></li>
+      <li><a class="regular" href="https://shadertoyunofficial.wordpress.com/">Shadertoy Unofficial</a> by <a class="user" href="/user/FabriceNeyret2">FabriceNeyret2</a></li>
+      </ul>
+    </div>
+
+</div>
+
+<div id="compliance" style="padding-bottom:6px;visibility:hidden;left:0;top:0px;width:100%;background-color:rgb(200,120,20,0.93);position:absolute;color:#FFFFFF">
+    <div style="text-align: center; margin-top:8px">
+        We use cookies to give you the best experience on our website. If you continue using Shadertoy, we'll assume that you are happy to receive all cookies on this website. 
+        For more information, please review our <a class="regular" href="/terms">Terms & Privacy</a>.
+    </div> 
+    <div style="text-align: center;margin-top:6px">
+        <button type="button" style="width:100px;font-size:inherit" onclick="acceptCompliance()">Accept</button>
+    </div>
+</div>
+
+<script>
+(function runCompliance() 
+{
+    let showCompliance = 1;
+    let allcookies = document.cookie;
+    let cookiearray = allcookies.split(';');
+    for (var i=0; i<cookiearray.length; i++)
+    {
+        let name  = cookiearray[i].split('=')[0];
+        let value = cookiearray[i].split('=')[1];
+        if (name.trim() == "scmp") 
+        {
+            showCompliance = value;
+            break;
+        }
+    }
+
+    if (showCompliance === 1) 
+    {
+        var ve = document.getElementById("compliance");
+        ve.style.visibility="visible";
+    }
+})();
+
+function acceptCompliance()
+{
+    let now = new Date();
+    now.setTime( now.getTime() + (5*365*24*60*60*1000) );
+    document.cookie="scmp=0;expires=" + now.toUTCString() + ";";
+
+    var ve = document.getElementById("compliance");
+    ve.style.visibility="hidden";
+}
+</script>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-44068895-1', 'shadertoy.com');
+    ga('send', 'pageview');
+</script></body>
+</html>

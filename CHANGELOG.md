@@ -1,6 +1,10 @@
-## 1.0.0-dev.9
+## 1.0.0
 
-- TODO
+- Upgraded sdk version to 2.10
+- Updated dependencies
+- Fixed non-secure http link in the README
+- Major overhaul on the tests increasing significantly the coverage
+- Significative changes on the codebase which could cause errors on the consumers
 
 ## 1.0.0-dev.8
 

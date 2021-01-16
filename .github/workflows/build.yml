@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@v1
       - name: Install dependencies
         run: pub get
+      - name: Generate sources
+        run: pub run build_runner build
       - name: Run Formatter
         run: dartfmt -n --set-exit-if-changed .
       - name: Run Analyser

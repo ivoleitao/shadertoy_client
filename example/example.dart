@@ -1,16 +1,11 @@
-import 'package:dotenv/dotenv.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:shadertoy_client/shadertoy_client.dart';
 
-void main(List<String> arguments) async {
-  // Reads environment variables from a .env file.
-  // Create .env file at the root of the project and set
-  // the apiKey e.g. `apiKey='XXXXXX'`. This project uses the
-  // dotenv package to load values at bootstrap
-  load();
+import 'env.dart';
 
+void main(List<String> arguments) async {
   // If the api key is not specified in the arguments, try the environment one
-  var apiKey = arguments.isEmpty ? env['apiKey'] : arguments[0];
+  var apiKey = arguments.isEmpty ? Env.apiKey : arguments[0];
 
   // if no api key is found abort
   if (apiKey == null || apiKey.isEmpty) {
@@ -18,12 +13,12 @@ void main(List<String> arguments) async {
     return;
   }
 
-  var ws = ShadertoyWSClient.build(apiKey);
-  var site = ShadertoySiteClient.build();
+  final ws = newShadertoyWSClient(apiKey);
+  final site = newShadertoySiteClient();
 
   // Gets the shader by id
-  var shaderId = '3lsSzf';
-  var sr = await ws.findShaderById(shaderId);
+  final shaderId = '3lsSzf';
+  final sr = await ws.findShaderById(shaderId);
   if (sr.ok) {
     // If there is no error print the shader contents
     print('${sr?.shader?.info?.id}');
@@ -34,7 +29,7 @@ void main(List<String> arguments) async {
     print('\tViews: ${sr?.shader?.info?.views}');
     print('\tLikes: ${sr?.shader?.info?.likes}');
     print(
-        '\tPublish Status: ${EnumToString.parse(sr?.shader?.info?.publishStatus)}');
+        '\tPrivacy: ${EnumToString.convertToString(sr?.shader?.info?.privacy)}');
     print('\tTags: ${sr?.shader?.info?.tags?.join(',')}');
     print('\tFlags: ${sr?.shader?.info?.flags}');
     print('\tLiked: ${sr?.shader?.info?.hasLiked}');
@@ -47,7 +42,7 @@ void main(List<String> arguments) async {
   }
 
   // Gets the firs 5 comments for this shader
-  var sc = await site.findCommentsByShaderId(shaderId);
+  final sc = await site.findCommentsByShaderId(shaderId);
   if (sc.ok) {
     // If there is no error print the shader comments
     sc?.comments?.take(5)?.forEach((c) => print('${c.userId}: ${c.text}'));

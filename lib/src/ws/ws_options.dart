@@ -1,11 +1,12 @@
 import 'package:meta/meta.dart';
+import 'package:shadertoy_api/shadertoy_api.dart';
 import 'package:shadertoy_client/shadertoy_client.dart';
-import 'package:shadertoy_client/src/client_options.dart';
+import 'package:shadertoy_client/src/http_options.dart';
 
 /// Options for the Shadertoy REST API client
 ///
 /// Stores the options used to build a [ShadertoyWSClient]
-class ShadertoyWSOptions extends ShadertoyClientOptions {
+class ShadertoyWSOptions extends ShadertoyHttpOptions {
   /// The default base API path to use for the REST calls
   ///
   /// Currently points to the v1 of the API
@@ -21,29 +22,63 @@ class ShadertoyWSOptions extends ShadertoyClientOptions {
   ///
   /// * [apiKey]: The API key
   /// * [apiPath]: The base api path, defaults to [ShadertoyWSOptions.DefaultApiPath]
-  /// * [poolMaxAllocatedResources]: The maximum number of resources allocated for parallel calls, defaults to [ShadertoyClientOptions.DefaultPoolMaxAllocatedResources]
-  /// * [poolTimeout]: The timeout before giving up on a call, defaults to [ShadertoyClientOptions.DefaultPoolTimeout]
-  /// * [retryMaxAttempts]: The maximum number of attempts at a failed request, defaults to [ShadertoyClientOptions.DefaultRetryMaxAttempts]
-  /// * [shaderCount]: The number of shaders fetched on a paged call, defaults to [ShadertoyClientOptions.DefaultShaderCount]
+  /// * [baseUrl]: The Shadertoy base url
+  /// * [poolMaxAllocatedResources]: The maximum number of resources allocated for parallel calls
+  /// * [poolTimeout]: The timeout before giving up on a call
+  /// * [retryMaxAttempts]: The maximum number of attempts at a failed request
+  /// * [shaderCount]: The number of shaders fetched in a paged call
+  /// * [errorHandling]: The error handling mode
   ShadertoyWSOptions(
       {@required this.apiKey,
-      this.apiPath = DefaultApiPath,
-      int poolMaxAllocatedResources =
-          ShadertoyClientOptions.DefaultPoolMaxAllocatedResources,
-      int poolTimeout = ShadertoyClientOptions.DefaultPoolTimeout,
-      int retryMaxAttempts = ShadertoyClientOptions.DefaultRetryMaxAttempts,
-      int shaderCount = ShadertoyClientOptions.DefaultShaderCount})
-      : assert(apiKey != null && apiKey.isNotEmpty),
-        assert(apiPath != null && apiPath.isNotEmpty),
-        assert(poolMaxAllocatedResources != null &&
-            poolMaxAllocatedResources >= 1),
-        assert(poolTimeout != null && poolTimeout >= 0),
-        assert(retryMaxAttempts != null && retryMaxAttempts >= 0),
-        assert(shaderCount != null && shaderCount > 0),
+      String apiPath,
+      String baseUrl,
+      int poolMaxAllocatedResources,
+      int poolTimeout,
+      int retryMaxAttempts,
+      int shaderCount,
+      ErrorMode errorHandling})
+      : assert(apiKey != null && apiKey.isNotEmpty,
+            'apiKey is not null and not empty'),
+        apiPath = apiPath ?? DefaultApiPath,
         super(
+            baseUrl: baseUrl,
             supportsCookies: false,
             poolMaxAllocatedResources: poolMaxAllocatedResources,
             poolTimeout: poolTimeout,
             retryMaxAttempts: retryMaxAttempts,
-            shaderCount: shaderCount);
+            shaderCount: shaderCount,
+            errorHandling: errorHandling) {
+    assert(this.apiPath.isNotEmpty, 'apiPath is not empty');
+  }
+
+  /// Builds a copy of a [ShadertoyWSOptions]
+  ///
+  /// * [apiKey]: The API key
+  /// * [apiPath]: The base api path
+  /// * [baseUrl]: The Shadertoy base url
+  /// * [poolMaxAllocatedResources]: The maximum number of resources allocated for parallel calls
+  /// * [poolTimeout]: The timeout before giving up on a call
+  /// * [retryMaxAttempts]: The maximum number of attempts at a failed request
+  /// * [shaderCount]: The number of shaders fetched on a paged call
+  /// * [errorHandling]: The error handling mode
+  ShadertoyWSOptions copyWith(
+      {String apiKey,
+      String apiPath,
+      String baseUrl,
+      int poolMaxAllocatedResources,
+      int poolTimeout,
+      int retryMaxAttempts,
+      int shaderCount,
+      ErrorMode errorHandling}) {
+    return ShadertoyWSOptions(
+        apiKey: apiKey ?? this.apiKey,
+        apiPath: apiPath ?? this.apiPath,
+        baseUrl: baseUrl ?? this.baseUrl,
+        poolMaxAllocatedResources:
+            poolMaxAllocatedResources ?? this.poolMaxAllocatedResources,
+        poolTimeout: poolTimeout ?? this.poolTimeout,
+        retryMaxAttempts: retryMaxAttempts ?? this.retryMaxAttempts,
+        shaderCount: shaderCount ?? this.shaderCount,
+        errorHandling: errorHandling ?? this.errorHandling);
+  }
 }
