@@ -17,6 +17,10 @@ jobs:
         uses: actions/checkout@v1
       - name: Install dependencies
         run: pub get
+      - name: Copy environment file from template
+        run: cp env.template .env
+      - name: Generate sources
+        run: pub run build_runner build
       - name: Run Formatter
         run: dartfmt -n --set-exit-if-changed .
       - name: Run Analyser
