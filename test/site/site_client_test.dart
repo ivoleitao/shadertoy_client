@@ -1267,7 +1267,8 @@ void main() {
       expect(sr.comments[0].id, 'XlGcRK');
       expect(sr.comments[0].userId, 'wosztal15');
       expect(sr.comments[0].picture, '/media/users/wosztal15/profile.jpeg');
-      expect(sr.comments[0].date, DateTime(2020, 09, 11, 11, 37, 32));
+      expect(sr.comments[0].date,
+          DateTime.fromMillisecondsSinceEpoch(1599820652 * 1000));
       expect(sr.comments[0].text,
           '\nI have to admit that it makes an amazing impression!');
       expect(sr.comments[0].hidden, false);
@@ -1275,14 +1276,16 @@ void main() {
       expect(sr.comments[1].id, '4lGyzG');
       expect(sr.comments[1].userId, 'Cubex');
       expect(sr.comments[1].picture, '/media/users/Cubex/profile.png');
-      expect(sr.comments[1].date, DateTime(2020, 09, 7, 16, 47, 38));
+      expect(sr.comments[1].date,
+          DateTime.fromMillisecondsSinceEpoch(1599493658 * 1000));
       expect(sr.comments[1].text, 'Woobly moobly, it\'s amazing!');
       expect(sr.comments[1].hidden, false);
 
       expect(sr.comments[2].id, 'Xd2GW1');
       expect(sr.comments[2].userId, 'iq');
       expect(sr.comments[2].picture, '/media/users/iq/profile.png');
-      expect(sr.comments[2].date, DateTime(2014, 03, 17, 16, 35, 55));
+      expect(sr.comments[2].date,
+          DateTime.fromMillisecondsSinceEpoch(1395074155 * 1000));
       expect(sr.comments[2].text, 'Oh, I love it!');
       expect(sr.comments[2].hidden, false);
 
@@ -1293,21 +1296,21 @@ void main() {
                 id: 'XlGcRK',
                 userId: 'wosztal15',
                 picture: '/media/users/wosztal15/profile.jpeg',
-                date: DateTime(2020, 09, 11, 11, 37, 32),
+                date: DateTime.fromMillisecondsSinceEpoch(1599820652 * 1000),
                 text: '\nI have to admit that it makes an amazing impression!',
                 hidden: false),
             Comment(
                 id: '4lGyzG',
                 userId: 'Cubex',
                 picture: '/media/users/Cubex/profile.png',
-                date: DateTime(2020, 09, 7, 16, 47, 38),
+                date: DateTime.fromMillisecondsSinceEpoch(1599493658 * 1000),
                 text: 'Woobly moobly, it\'s amazing!',
                 hidden: false),
             Comment(
                 id: 'Xd2GW1',
                 userId: 'iq',
                 picture: '/media/users/iq/profile.png',
-                date: DateTime(2014, 03, 17, 16, 35, 55),
+                date: DateTime.fromMillisecondsSinceEpoch(1395074155 * 1000),
                 text: 'Oh, I love it!',
                 hidden: false),
           ]));
