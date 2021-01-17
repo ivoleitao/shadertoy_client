@@ -1,3 +1,4 @@
+clean: pub run build_runner clean
 generate: pub run build_runner build --delete-conflicting-outputs
 format: dartfmt -w .
 analyze: dartanalyzer .
