@@ -22,7 +22,7 @@ dependencies:
   html: ^0.14.0+4
   intl: ^0.16.1
   envify: ^1.0.6
-  shadertoy_api: ^1.0.5
+  shadertoy_api: ^1.0.7
   # shadertoy_api:
   #  path: ../shadertoy_api
 
@@ -33,3 +33,5 @@ dev_dependencies:
   test: ^1.15.7
   test_coverage: ^0.5.0
   mockito: ^4.1.3
+
+scripts: derry.yaml

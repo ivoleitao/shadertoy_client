@@ -1,0 +1,26 @@
+generate: pub run build_runner build --delete-conflicting-outputs
+format: dartfmt -w .
+analyze: dartanalyzer .
+coverage: pub run test_coverage --print-test-output
+prepare:
+  (execution): once
+  (scripts):
+    - pub global activate remove_from_coverage
+    - \cp publish.env .env
+build:
+  (execution): once
+  (scripts):
+    - pub get
+    - pub run build_runner build
+verify:
+  (execution): once
+  (scripts):
+    - dartfmt -n --set-exit-if-changed .
+    - dartanalyzer . --fatal-warnings
+    - pub run test_coverage --print-test-output
+    - remove_from_coverage -f coverage/lcov.info -r '.g.dart$'
+publish:
+  (execution): once
+  (scripts):
+    - \cp publish.gitignore .gitignore
+    - pub publish -f

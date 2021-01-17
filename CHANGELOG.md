@@ -5,6 +5,7 @@
 - Fixed non-secure http link in the README
 - Major overhaul on the tests increasing significantly the coverage
 - Significative changes on the codebase which could cause errors on the consumers
+- Added derry support
 
 ## 1.0.0-dev.8
 
