@@ -861,14 +861,15 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
           var idList = c?.ids;
           var hiddenList = c?.hidden;
 
-          var comments = [
+          var commentsLength = [
             userIdList?.length ?? 0,
             userPictureList?.length ?? 0,
             dateList?.length ?? 0,
             textList?.length ?? 0,
             idList?.length ?? 0,
             hiddenList?.length ?? 0
-          ]..reduce(min);
+          ].reduce(min);
+          var comments = List<Comment>.filled(commentsLength, null);
 
           for (var i = 0; i < comments.length; i++) {
             String userId;
