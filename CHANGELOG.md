@@ -1,6 +1,9 @@
 ## 1.0.1
 
-- TDB
+- TBD
+## 1.0.1
+
+- Improved analysis results
 
 ## 1.0.0
 
