@@ -1,3 +1,7 @@
+## 1.0.4
+
+- TBD
+
 ## 1.0.3
 
 - Previous version was importing an API with a wrong return value. Updated to the next API version
