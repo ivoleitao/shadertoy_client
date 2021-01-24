@@ -1,6 +1,6 @@
 ## 1.0.3
 
-- TDB
+- Previous version was importing an API with a wrong return value. Updated to the next API version
 
 ## 1.0.2
 
