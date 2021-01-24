@@ -1,6 +1,7 @@
-## 1.0.1
+## 1.0.2
 
-- TBD
+- Updated to the next shadertoy api version
+
 ## 1.0.1
 
 - Improved analysis results
