@@ -178,7 +178,6 @@ abstract class ShadertoyHttpClient<T extends ShadertoyHttpOptions>
   /// * [handle]: The error handling function
   Future<R> catchDioError<R extends APIResponse>(
       Future<R> future, R Function(DioError) handle) {
-    return ShadertoyClient.catchError<R, DioError>(
-        future, handle, options.errorHandling);
+    return catchError<R, DioError>(future, handle, options.errorHandling);
   }
 }
