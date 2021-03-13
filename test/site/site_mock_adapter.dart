@@ -191,7 +191,7 @@ extension SiteMockAdaptater on MockAdapter {
     var url = StringBuffer('/user/$userId');
     for (final queryParameter in queryParameters.entries) {
       for (final queryParameterValue in queryParameter.value) {
-        url.write('&${queryParameter.key}=${queryParameterValue}');
+        url.write('&${queryParameter.key}=$queryParameterValue');
       }
     }
 

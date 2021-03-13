@@ -48,6 +48,6 @@ void main(List<String> arguments) async {
     sc?.comments?.take(5)?.forEach((c) => print('${c.userId}: ${c.text}'));
   } else {
     // In case of error print the error message
-    print('Error retrieving shader ${shaderId} comments: ${sr.error.message}');
+    print('Error retrieving shader $shaderId comments: ${sr.error.message}');
   }
 }

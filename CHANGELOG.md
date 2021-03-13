@@ -1,6 +1,7 @@
 ## 1.0.4
 
-- TBD
+- New version of the shadertoy_api
+- Corrected lint errors
 
 ## 1.0.3
 

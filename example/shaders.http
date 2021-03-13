@@ -1,1 +1,3 @@
+GET {{baseUrl}}/{{apiPath}}/{{shadersPath}}/Mt3XW8?key={{$dotenv API_KEY}}
+###
 GET {{baseUrl}}/{{apiPath}}/{{shadersPath}}?key={{$dotenv API_KEY}}

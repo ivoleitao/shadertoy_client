@@ -15,7 +15,7 @@ void main(List<String> arguments) async {
 
   var ws = newShadertoyWSClient(apiKey);
 
-  var sr = await ws.findShaderById('3lsSzf');
+  var sr = await ws.findShaderById('Mt3XW8');
   print('${sr?.shader?.info?.id}');
   print('\tName: ${sr?.shader?.info?.name}');
   print('\tUserName: ${sr?.shader?.info?.userId}');

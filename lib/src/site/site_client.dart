@@ -593,7 +593,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
             filters: filters, sort: sort, from: startFrom)
         .then((FindShaderIdsResponse userShaderPage) {
       if (userShaderPage.error != null) {
-        userShaderPage.error..target = userId;
+        userShaderPage.error.target = userId;
         return userShaderPage;
       }
 
@@ -1083,7 +1083,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
     return _getShaderIdsPageByPlayListId(playlistId, from: startFrom)
         .then((FindShaderIdsResponse playlistShaderPage) {
       if (playlistShaderPage.error != null) {
-        playlistShaderPage.error..target = playlistId;
+        playlistShaderPage.error.target = playlistId;
         return playlistShaderPage;
       }
 
