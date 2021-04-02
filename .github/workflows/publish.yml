@@ -1,24 +1,20 @@
 name: publish
-
 on:
   push:
     branches:
       - master
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image: google/dart:latest
-
     steps:
-      - name: Add pub to the path
-        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-      - name: Install derry
-        run: pub global activate derry
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Install derry
+        run: pub global activate derry
       - name: Prepare
         run: derry prepare
       - name: Build
