@@ -7,6 +7,7 @@ prebuild:
   (execution): once
   (scripts):
     - pub get
+    - pub run grinder prebuild
 build:
   (execution): once
   (scripts):
@@ -25,7 +26,7 @@ verify:
 prepublish:
   (execution): once
   (scripts):
-    - \cp publish.gitignore .gitignore
+    - pub run grinder prepublish
 publish:
   (execution): once
   (scripts):
