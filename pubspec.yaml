@@ -22,7 +22,7 @@ dependencies:
   html: ^0.15.0
   intl: ^0.17.0
   envify: ^1.0.6
-  shadertoy_api: ^1.0.15
+  shadertoy_api: ^1.0.16
   #shadertoy_api:
   #  path: ../shadertoy_api
 
