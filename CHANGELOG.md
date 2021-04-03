@@ -1,6 +1,7 @@
 ## 1.0.7
 
-- TODO
+- Removed grinder support
+- Simplified derry script
 
 ## 1.0.6
 
