@@ -3,16 +3,18 @@ generate: pub run build_runner build --delete-conflicting-outputs
 format: dart format .
 analyze: dart analyze .
 coverage: dart test --coverage=coverage && dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.packages --report-on=lib
-prepare:
-  (execution): once
-  (scripts):
-    - pub global activate remove_from_coverage
-    - \cp publish.env .env
-build:
+prebuild:
   (execution): once
   (scripts):
     - pub get
-    - pub run build_runner build
+build:
+  (execution): once
+  (scripts):
+    - pub run build_runner build --delete-conflicting-outputs
+preverify:
+  (execution): once
+  (scripts):
+    - pub global activate remove_from_coverage
 verify:
   (execution): once
   (scripts):
@@ -20,8 +22,12 @@ verify:
     - dart analyze . --fatal-warnings
     - dart test --coverage=coverage && dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.packages --report-on=lib
     - remove_from_coverage -f coverage/lcov.info -r '.g.dart$'
+prepublish:
+  (execution): once
+  (scripts):
+    - \cp publish.env .env  
+    - \cp publish.gitignore .gitignore
 publish:
   (execution): once
   (scripts):
-    - \cp publish.gitignore .gitignore
     - pub publish -f

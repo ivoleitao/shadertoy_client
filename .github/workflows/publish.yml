@@ -15,8 +15,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Install derry
         run: pub global activate derry
-      - name: Prepare
-        run: derry prepare
       - name: Build
         run: derry build
       - name: Verify
