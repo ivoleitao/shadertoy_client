@@ -13,6 +13,12 @@ jobs:
           sdk: stable
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1
+        with:
+          envkey_API_KEY:
+          envkey_USER:
+          envkey_PASSWORD:
       - name: Install derry
         run: pub global activate derry
       - name: Build
