@@ -13,16 +13,6 @@ jobs:
           sdk: stable
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Copy env file
-        uses: canastro/copy-file-action@master
-        with:
-          source: "default.env"
-          target: ".env"        
-      - name: Copy gitignore file
-        uses: canastro/copy-file-action@master
-        with:
-          source: "publish.gitignore"
-          target: ".gitignore" 
       - name: Install derry
         run: pub global activate derry
       - name: Build

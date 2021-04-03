@@ -17,11 +17,12 @@ jobs:
           sdk: ${{ matrix.sdk }}
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Copy env file
-        uses: canastro/copy-file-action@master
-        with:
-          source: "default.env"
-          target: ".env"        
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1
+          with:
+            envkey_API_KEY:
+            envkey_USER:
+            envkey_PASSWORD:
       - name: Install derry
         run: pub global activate derry
       - name: Build
