@@ -22,11 +22,6 @@ verify:
     - dart analyze . --fatal-warnings
     - dart test --coverage=coverage && dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.packages --report-on=lib
     - remove_from_coverage -f coverage/lcov.info -r '.g.dart$'
-prepublish:
-  (execution): once
-  (scripts):
-    - \cp publish.env .env  
-    - \cp publish.gitignore .gitignore
 publish:
   (execution): once
   (scripts):
