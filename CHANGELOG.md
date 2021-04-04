@@ -1,6 +1,6 @@
 ## 1.0.8
 
-- TODO
+- Updated the shadertoy_api version
 
 ## 1.0.7
 
