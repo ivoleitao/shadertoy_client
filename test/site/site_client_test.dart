@@ -1268,6 +1268,7 @@ void main() {
           FindCommentsResponse(comments: [
             Comment(
                 id: 'XlGcRK',
+                shaderId: shaderId,
                 userId: 'wosztal15',
                 picture: '/media/users/wosztal15/profile.jpeg',
                 date: DateTime.fromMillisecondsSinceEpoch(1599820652 * 1000),
@@ -1275,6 +1276,7 @@ void main() {
                 hidden: false),
             Comment(
                 id: '4lGyzG',
+                shaderId: shaderId,
                 userId: 'Cubex',
                 picture: '/media/users/Cubex/profile.png',
                 date: DateTime.fromMillisecondsSinceEpoch(1599493658 * 1000),
@@ -1283,6 +1285,7 @@ void main() {
             Comment(
                 id: 'Xd2GW1',
                 userId: 'iq',
+                shaderId: shaderId,
                 picture: '/media/users/iq/profile.png',
                 date: DateTime.fromMillisecondsSinceEpoch(1395074155 * 1000),
                 text: 'Oh, I love it!',

@@ -907,6 +907,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
 
             comments[i] = Comment(
                 id: id,
+                shaderId: shaderId,
                 userId: userId,
                 picture: userPicture,
                 date: date,

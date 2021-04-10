@@ -1,6 +1,7 @@
 ## 1.0.9
 
-- TODO
+- Updated to next shadertoy_api version
+- Updated derry with test action
 
 ## 1.0.8
 
