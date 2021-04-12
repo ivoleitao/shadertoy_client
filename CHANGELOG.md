@@ -1,6 +1,6 @@
 ## 1.0.12
 
-- TODO
+- Fixed a wrong context
 
 ## 1.0.11
 
