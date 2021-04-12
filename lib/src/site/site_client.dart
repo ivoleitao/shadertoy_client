@@ -920,7 +920,7 @@ class ShadertoySiteClient extends ShadertoyHttpClient<ShadertoySiteOptions>
         }),
         (de) => FindCommentsResponse(
             error: toResponseError(de,
-                context: CONTEXT_COMMENT, target: shaderId)));
+                context: CONTEXT_SHADER, target: shaderId)));
   }
 
   /// Builds the playlist url used in the call to Shadertoy playlist page in
