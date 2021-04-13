@@ -1311,7 +1311,7 @@ void main() {
           sr.error,
           ResponseError.unknown(
               message: 'SocketException: $message',
-              context: CONTEXT_COMMENT,
+              context: CONTEXT_SHADER,
               target: shaderId));
     });
   });
